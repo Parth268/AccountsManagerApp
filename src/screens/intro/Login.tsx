@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator, StatusBar } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useTranslation } from "react-i18next"; // import hook for translation
+import { useTranslation } from "react-i18next";
 import { STORAGE_KEYS } from "../../utils/constants";
-// import '../../locales/i18n'; // Import the i18n configuration
+import { NavigationProp } from "@react-navigation/native";
 
-const Login = ({ navigation }) => {
-  const { t, i18n } = useTranslation(); // hook to access translations
-  const [phoneNumber, setPhoneNumber] = useState("9876543210");
-  const [loading, setLoading] = useState(false);
+interface LoginProps {
+  navigation: NavigationProp<any>;
+}
 
-  // Handle login button press
+const Login: React.FC<LoginProps> = ({ navigation }) => {
+  const { t } = useTranslation();
+  const [phoneNumber, setPhoneNumber] = useState<string>("9876543210");
+  const [loading, setLoading] = useState<boolean>(false);
+
   const handleLogin = async () => {
     if (phoneNumber.length === 10) {
       setLoading(true);
 
       try {
-        // Save phone number in AsyncStorage
         await AsyncStorage.setItem(STORAGE_KEYS.USER_PHONE_NUMBER, phoneNumber);
 
         setTimeout(() => {
@@ -28,34 +30,34 @@ const Login = ({ navigation }) => {
         Alert.alert(t('error'), t('error_message'));
       }
     } else {
-      // Invalid phone number
       Alert.alert(t('invalid_phone_number_title'), t('invalid_phone_number'));
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.headerContainer}>
         <Text style={styles.title}>{t('greeting')}</Text>
         <Text style={styles.subtitle}>{t('get_started')}</Text>
         <Text style={styles.description}>{t('login_description')}</Text>
       </View>
 
-      {/* Phone Number Input */}
       <TextInput
         style={styles.input}
         placeholder={t('phone_number_placeholder')}
         keyboardType="numeric"
         maxLength={10}
         value={phoneNumber}
-        onChangeText={(text) => setPhoneNumber(text)}
+        onChangeText={(text: string) => setPhoneNumber(text)}
         placeholderTextColor="#AAAAAA"
         autoFocus
       />
 
-      {/* Login Button */}
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
+      <TouchableOpacity 
+        style={styles.loginButton} 
+        onPress={handleLogin} 
+        disabled={loading}
+      >
         {loading ? (
           <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
@@ -69,7 +71,7 @@ const Login = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF", // White background
+    backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
@@ -81,41 +83,41 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#333333", // Darker text for better readability
+    color: "#333333",
     textAlign: "center",
   },
   subtitle: {
     fontSize: 22,
-    color: "#444444", // Slightly lighter than title
+    color: "#444444",
     textAlign: "center",
     marginTop: 5,
   },
   description: {
     fontSize: 14,
-    color: "#666666", // Neutral gray for description
+    color: "#666666",
     textAlign: "center",
     marginVertical: 15,
   },
   input: {
     width: "90%",
     height: 50,
-    backgroundColor: "#F9F9F9", // Light gray for input background
+    backgroundColor: "#F9F9F9",
     borderRadius: 15,
     paddingHorizontal: 15,
     fontSize: 16,
     marginTop: 20,
     borderWidth: 1,
-    borderColor: "#DDDDDD", // Subtle border color
+    borderColor: "#DDDDDD",
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
-    color: "#333333", // Dark text for input
+    color: "#333333",
   },
   loginButton: {
     width: "90%",
-    backgroundColor: "#000000", 
+    backgroundColor: "#000000",
     paddingVertical: 15,
     borderRadius: 15,
     alignItems: "center",
@@ -128,7 +130,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     fontSize: 16,
-    color: "#FFFFFF", // White text on blue button
+    color: "#FFFFFF",
     fontWeight: "bold",
   },
 });

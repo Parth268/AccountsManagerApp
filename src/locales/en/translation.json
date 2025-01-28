@@ -27,5 +27,7 @@
   "securityAndLogins": "Security and Logins",
   "actions": "Actions",
   "addAccount": "Add Account",
-  "logOut": "Log out"
+  "logOut": "Log out",
+  "theme_change":"Theme Change",
+  "language_change":"Language Change"
 }

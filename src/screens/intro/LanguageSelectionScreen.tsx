@@ -10,15 +10,30 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DEFAULTS } from "../../utils/constants"; // Assuming you have a constants file for default values
 import { useTranslation } from "react-i18next";
-// import '../../locales/i18n'
+import { NavigationProp } from "@react-navigation/native"; // Import NavigationProp for type safety
 
-const LanguageSelectionScreen = ({ navigation }) => {
-  const [selectedLanguage, setSelectedLanguage] = useState(null);
-  const [isLoading, setIsLoading] = useState(true)
+// Define the type for a language object
+interface Language {
+  id: string;
+  name: string;
+  symbol: string;
+  code: string;
+  bgColor: string;
+  symbolColor: string;
+}
+
+// Define the props for the component
+interface LanguageSelectionScreenProps {
+  navigation: NavigationProp<any>; // Use NavigationProp for type safety
+}
+
+const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ navigation }) => {
+  const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { t, i18n } = useTranslation();
 
   // List of languages to display
-  const languages = [
+  const languages: Language[] = [
     { id: "1", name: "Hindi", symbol: "अ", code: "hi", bgColor: "#DDEFFF", symbolColor: "#007AFF" },
     { id: "2", name: "English", symbol: "A", code: "en", bgColor: "#E8F5E9", symbolColor: "#2ECC71" },
     { id: "3", name: "Bengali", symbol: "আ", code: "bn", bgColor: "#FFF3E0", symbolColor: "#E67E22" },
@@ -54,14 +69,13 @@ const LanguageSelectionScreen = ({ navigation }) => {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   // Save the selected language to AsyncStorage and navigate to the Login screen
-  const handleLanguageSelect = async (language) => {
+  const handleLanguageSelect = async (language: Language) => {
     try {
-
       if (i18n && typeof i18n.changeLanguage === 'function') {
-        await i18n.changeLanguage(language);
+        await i18n.changeLanguage(language.code);
         await AsyncStorage.setItem(DEFAULTS.LANGUAGE, JSON.stringify(language));
         await AsyncStorage.setItem(DEFAULTS.IS_OPEN_FIRST_TIME, "true");
         setSelectedLanguage(language);
@@ -78,14 +92,14 @@ const LanguageSelectionScreen = ({ navigation }) => {
 
   return (
     <>
-      {isLoading ?
+      {isLoading ? (
         <View style={styles.container}>
           <View style={styles.loaderContainer}>
             <ActivityIndicator size="large" color="#6200ee" />
             <Text style={styles.loadingText}>Loading...</Text>
           </View>
         </View>
-        :
+      ) : (
         <View style={styles.container}>
           <Text style={styles.title}>Choose Language</Text>
           <Text style={styles.subtitle}>भाषा चुनें</Text>
@@ -111,9 +125,8 @@ const LanguageSelectionScreen = ({ navigation }) => {
             )}
           />
         </View>
-      }
+      )}
     </>
-
   );
 };
 

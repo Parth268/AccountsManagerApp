@@ -5,6 +5,8 @@ import globalStyles from "../../styles/globalStyles";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../storage/context/AuthContext";
 import CustomAlert from "../../components/CustomAlert";
+import { DEFAULTS, NAVIGATION } from "../../utils/constants";
+import PushNotification from 'react-native-push-notification';
 
 const SettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -12,6 +14,7 @@ const SettingsScreen = ({ navigation }) => {
 
   const [isAlertVisible, setAlertVisible] = useState(false);
 
+  // Handle back navigation
   const handleBackPress = () => {
     if (navigation && navigation.goBack) {
       navigation.goBack();
@@ -20,33 +23,55 @@ const SettingsScreen = ({ navigation }) => {
     }
   };
 
+  // Show alert for logout confirmation
   const showAlert = () => setAlertVisible(true);
   const hideAlert = () => setAlertVisible(false);
 
+
+
+  // Logout user
   const logoutApp = () => {
     hideAlert();
     logout();
   };
 
+
+  // Handle language change
   const handleOnLanguageChange = () => {
-
+    // Implement language change logic here
+    navigation.navigate(NAVIGATION.CHANGE_LANGUAGE)
   }
 
+  // Handle theme change
   const handleOnThemeChange = () => {
+    // Implement theme change logic here
+    navigation.navigate(NAVIGATION.CHANGE_THEME)
+
   }
+
+  // Reset notifications
   const handleOnNotificationReset = () => {
+    // Implement notification reset logic here
+    PushNotification.cancelAllLocalNotifications();
+
+    // To clear any scheduled notifications (if applicable)
+    PushNotification.removeAllDeliveredNotifications();
   }
 
+  // Handle privacy policy
   const handleOnPrivacyPolicy = () => {
-
+    // Navigate to privacy policy screen or show details
+    navigation.navigate(NAVIGATION.WEBVIEW, { url: DEFAULTS.POLICY_URL })
   }
 
+  // Handle terms of service
   const handleOnTermsOfService = () => {
+    // Navigate to terms of service screen or show details
+    navigation.navigate(NAVIGATION.WEBVIEW, { url: DEFAULTS.TERM_AND_CONDITION })
+
   }
 
-  const handlePasswordChange = () => {
-    
-  }
+
 
   return (
     <View style={globalStyles.container}>
@@ -70,9 +95,17 @@ const SettingsScreen = ({ navigation }) => {
             <Icon name="privacy-tip" size={24} color="#444" style={styles.icon} />
             <Text style={globalStyles.textPrimary}>{t("privacy_policy")}</Text>
           </Pressable>
-          <Pressable onPress={handlePasswordChange} style={styles.item}>
+          <Pressable onPress={handleOnTermsOfService} style={styles.item}>
             <Icon name="lock-outline" size={24} color="#444" style={styles.icon} />
-            <Text style={globalStyles.textPrimary}>{t("security_logins")}</Text>
+            <Text style={globalStyles.textPrimary}>{t("term_and_condition")}</Text>
+          </Pressable>
+          <Pressable onPress={handleOnThemeChange} style={styles.item}>
+            <Icon name="color-lens" size={24} color={"#444"} style={styles.icon} />
+            <Text style={globalStyles.textPrimary}>{t("theme_change")}</Text>
+          </Pressable>
+          <Pressable onPress={handleOnLanguageChange} style={styles.item}>
+            <Icon name="lock-outline" size={24} color="#444" style={styles.icon} />
+            <Text style={globalStyles.textPrimary}>{t("language_change")}</Text>
           </Pressable>
         </View>
 
@@ -142,5 +175,6 @@ const styles = StyleSheet.create({
     borderTopColor: "#ddd",
   },
 });
+
 
 export default SettingsScreen;
