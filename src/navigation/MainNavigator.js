@@ -9,16 +9,18 @@ const MainNavigator = () => {
   const { isLoggedIn } = useAuth(); // Get authentication state from AuthContext
   const { theme, language } = useApp(); // Get theme and language from AppContext
 
-  useEffect(() => {
-    console.log("Current Theme:", theme); // Log current theme (optional)
-    console.log("Current Language:", language); // Log current language (optional)
-  }, [theme, language]); // Effect runs when theme or language changes
-
+ 
   return (
     // Ensure there is only one NavigationContainer here
     <NavigationContainer>
       {/* Conditionally render the stack based on login state */}
-      {isLoggedIn ? <AppStack /> : <AuthStack />}
+      <>
+        {isLoggedIn ?
+          <AppStack />
+          :
+          <AuthStack />
+        }
+      </>
     </NavigationContainer>
   );
 };

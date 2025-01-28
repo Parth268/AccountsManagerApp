@@ -1,5 +1,31 @@
 {
-    "welcome": "Welcome",
-    "greeting": "Hello, {{name}}!"
-  }
-  
+  "greeting": "Namaste,",
+  "get_started": "Let's get started.",
+  "login_description": "Login using your number to continue.",
+  "phone_number_placeholder": "Enter your phone number",
+  "invalid_phone_number": "Please enter a valid 10-digit phone number.",
+  "login_button": "Login",
+  "error": "Error",
+  "error_message": "Failed to save your number. Please try again.",
+  "invalid_phone_number_title": "Invalid Phone Number",
+  "verify_otp": "Verify OTP",
+  "enter_otp_code": "Enter the 4-digit code sent to your phone.",
+  "resend_otp": "Resend OTP",
+  "confirm": "Confirm",
+  "your_business_name": "Your Business Name",
+  "transaction_details": "Transaction Details",
+  "party_details": "Party Details",
+  "manage_transaction_details": "Manage your transaction details efficiently.",
+  "manage_party_details": "Here you can view and manage your party details.",
+  "settings": "Settings",
+  "accountInformation": "Account Information",
+  "publicProfile": "Public Profile",
+  "notifications": "Notifications",
+  "privacy_policy":"Privacy Policy",
+  "notifications_reset":"Notifications Reset",
+  "privacyAndDate": "Privacy and Date",
+  "securityAndLogins": "Security and Logins",
+  "actions": "Actions",
+  "addAccount": "Add Account",
+  "logOut": "Log out"
+}

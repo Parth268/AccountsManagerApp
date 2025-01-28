@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityIndicator, View, Text, StyleSheet, Modal } from "react-native"; 
+import { DEFAULTS } from "../../utils/constants";
 
 const AuthContext = createContext();
 
@@ -26,7 +27,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (token) => {
     try {
-      await AsyncStorage.setItem("userToken", token);
+      await AsyncStorage.setItem(DEFAULTS.USER_TOKEN, token);
       setIsLoggedIn(true);
       setError(null); // Clear any previous errors
     } catch (error) {
@@ -37,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem("userToken");
+      await AsyncStorage.removeItem(DEFAULTS.USER_TOKEN);
       setIsLoggedIn(false);
       setError(null); // Clear any previous errors
     } catch (error) {

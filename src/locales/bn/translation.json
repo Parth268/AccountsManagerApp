@@ -1,0 +1,11 @@
+{
+  "greeting": "Namaste,",
+  "get_started": "Let's get started.",
+  "login_description": "Login using your number to continue.",
+  "phone_number_placeholder": "Enter your phone number",
+  "invalid_phone_number": "Please enter a valid 10-digit phone number.",
+  "login_button": "Login",
+  "error": "Error",
+  "error_message": "Failed to save your number. Please try again.",
+  "invalid_phone_number_title": "Invalid Phone Number"
+}

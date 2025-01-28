@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { useAuth } from "../../storage/context/AuthContext";
+import { useTranslation } from "react-i18next"; // Import translation hook
 
 const OTPScreen = () => {
+    const { t } = useTranslation(); // Hook to access translation
     const [otp, setOtp] = useState("4532");
     const inputRefs = useRef([]);
     const { login } = useAuth();
@@ -27,15 +29,15 @@ const OTPScreen = () => {
 
     const handleOnPress = () => {
         // Handle OTP submission here
-        login("q3tw4yrh")
+        login("q3tw4yrh");
     }
 
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.headerContainer}>
-                <Text style={styles.title}>Verify OTP</Text>
-                <Text style={styles.subtitle}>Enter the 4-digit code sent to your phone.</Text>
+                <Text style={styles.title}>{t('verify_otp')}</Text>
+                <Text style={styles.subtitle}>{t('enter_otp_code')}</Text>
             </View>
 
             {/* OTP Input */}
@@ -50,9 +52,6 @@ const OTPScreen = () => {
                         value={otp[index] || ""}
                         onChangeText={(value) => handleChange(value, index)}
                         placeholderTextColor="#AAAAAA"
-                        onFocus={() => {
-                            // Highlight the input field when focused (optional)
-                        }}
                     />
                 ))}
             </View>
@@ -60,14 +59,14 @@ const OTPScreen = () => {
             {/* Resend and Confirm */}
             <View style={styles.actionContainer}>
                 <TouchableOpacity>
-                    <Text style={styles.resendText}>Resend OTP</Text>
+                    <Text style={styles.resendText}>{t('resend_otp')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.confirmButton}
                     onPress={handleOnPress}
                 >
-                    <Text style={styles.confirmButtonText}>Confirm</Text>
+                    <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -77,7 +76,7 @@ const OTPScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#EAF6FF",
+        backgroundColor: "#ffffff",
         justifyContent: "center",
         alignItems: "center",
         padding: 20,

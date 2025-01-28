@@ -10,10 +10,12 @@ import {
 import Icon from "react-native-vector-icons/MaterialIcons"; // Importing Material Icons
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NAVIGATION, STORAGE_KEYS } from "../../utils/constants"; // Update path as per your project structure
+import { useTranslation } from "react-i18next"; // Import translation hook
 
 const { width } = Dimensions.get("window");
 
 const Dashboard = ({ navigation }) => {
+  const { t } = useTranslation(); // Hook to access translation
   const [activeTab, setActiveTab] = useState("transaction");
   const [phoneNumber, setPhoneNumber] = useState(""); // State for phone number
   const tabIndicator = new Animated.Value(activeTab === "transaction" ? 0 : 1);
@@ -54,7 +56,7 @@ const Dashboard = ({ navigation }) => {
       {/* Enhanced Header with Settings Icon */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.businessName}>Your Business Name</Text>
+          <Text style={styles.businessName}>{t('your_business_name')}</Text>
           <Text style={styles.ownerName}>{phoneNumber}</Text>
         </View>
         <TouchableOpacity
@@ -68,33 +70,24 @@ const Dashboard = ({ navigation }) => {
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <Animated.View
-          style={[
-            styles.tabIndicator,
-            { transform: [{ translateX: tabIndicatorTranslateX }] },
-          ]}
+          style={[styles.tabIndicator, { transform: [{ translateX: tabIndicatorTranslateX }] }]}
         />
         <TouchableOpacity
           style={styles.tab}
           onPress={() => switchTab("transaction")}
         >
           <Text
-            style={[
-              styles.tabText,
-              activeTab === "transaction" && styles.activeTabText,
-            ]}
+            style={[styles.tabText, activeTab === "transaction" && styles.activeTabText]}
           >
-            Transaction Details
+            {t('transaction_details')}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tab} onPress={() => switchTab("party")}>
           <Text
-            style={[
-              styles.tabText,
-              activeTab === "party" && styles.activeTabText,
-            ]}
+            style={[styles.tabText, activeTab === "party" && styles.activeTabText]}
           >
-            Party Details
+            {t('party_details')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -103,17 +96,17 @@ const Dashboard = ({ navigation }) => {
       <View style={styles.contentContainer}>
         {activeTab === "transaction" && (
           <View>
-            <Text style={styles.heading}>Transaction Details</Text>
+            <Text style={styles.heading}>{t('transaction_details')}</Text>
             <Text style={styles.description}>
-              Manage all your transaction details efficiently.
+              {t('manage_transaction_details')}
             </Text>
           </View>
         )}
         {activeTab === "party" && (
           <View>
-            <Text style={styles.heading}>Party Details</Text>
+            <Text style={styles.heading}>{t('party_details')}</Text>
             <Text style={styles.description}>
-              View and manage your party details here.
+              {t('manage_party_details')}
             </Text>
           </View>
         )}
@@ -126,7 +119,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f3f4f6",
-    paddingVertical: 16,
   },
   header: {
     flexDirection: "row",
@@ -137,6 +129,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     marginBottom: 16,
     borderBottomWidth: 1,
+    height: 80,
     borderBottomColor: "#ddd",
   },
   businessName: {

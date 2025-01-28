@@ -1,0 +1,20 @@
+{
+  "greeting": "નમસ્તે,",
+  "get_started": "ચાલો શરૂ કરીએ.",
+  "login_description": "આગળ વધવા માટે તમારો નંબર નો ઉપયોગ કરીને લૉગિન કરો.",
+  "phone_number_placeholder": "તમારો ફોન નંબર દાખલ કરો",
+  "invalid_phone_number": "કૃપા કરીને માન્ય 10 અંકનો ફોન નંબર દાખલ કરો.",
+  "login_button": "લૉગિન",
+  "error": "ખોટી માહિતી",
+  "error_message": "તમારો નંબર સાચવો અસમર્થ. કૃપા કરીને ફરી પ્રયાસ કરો.",
+  "invalid_phone_number_title": "અમાન્ય ફોન નંબર",
+  "verify_otp": "OTP ચકાસો",
+  "enter_otp_code": "તમારા ફોન પર મોકલેલા 4 અંકના કોડને દાખલ કરો.",
+  "resend_otp": "OTP ફરી મોકલાવો",
+  "confirm": "પુષ્ટિ કરો",
+  "your_business_name": "તમારા બિઝનેસનું નામ",
+  "transaction_details": "ટ્રાન્ઝેક્શન વિગતો",
+  "party_details": "પાર્ટી વિગતો",
+  "manage_transaction_details": "તમારા ટ્રાન્ઝેક્શન વિગતોને સક્ષમ રીતે મેનેજ કરો.",
+  "manage_party_details": "અહિં તમારી પાર્ટી વિગતો જોવાઈ અને મેનેજ કરી શકો છો."
+}
