@@ -41,7 +41,10 @@ export const NAVIGATION = {
   DASHBOARD: 'DASHBOARD',
   WEBVIEW: 'WEBVIEW',
   CHANGE_LANGUAGE: 'CHANGE_LANGUAGE',
-  CHANGE_THEME:'CHANGE_THEME'
+  CHANGE_THEME:'CHANGE_THEME',
+  LOGIN:"LOGIN",
+  LANGUAGE_SELECTION:"LANGUAGE_SELECTION",
+  OTPSCREEN:"OTPSCREEN"
 };
 
 // Default Values
@@ -53,7 +56,7 @@ export const DEFAULTS = {
   NOTIFICATION_CHANNEL_NAME: 'NOTIFICATION_CHANNEL_NAME',
   IS_OPEN_FIRST_TIME: "IS_OPEN_FIRST_TIME",
   POLICY_URL: 'https://sites.google.com/view/app-loom-privacy-policy/home',
-
+  TERM_AND_CONDITION:'https://sites.google.com/view/app-loom-privacy-policy/home',
 };
 
 // App Constants

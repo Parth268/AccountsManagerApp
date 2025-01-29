@@ -3,7 +3,7 @@
 export const COLORS = {
     primary: '#3498db', // Blue
     secondary: '#2ecc71', // Green
-    background: '#f5f5f5', // Light Gray
+    background: '#ffff', // Light Gray
     textPrimary: '#2c3e50', // Dark Gray
     textSecondary: '#7f8c8d', // Gray
     error: '#e74c3c', // Red

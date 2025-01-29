@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator, StatusBar } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-import { STORAGE_KEYS } from "../../utils/constants";
+import { NAVIGATION, STORAGE_KEYS } from "../../utils/constants";
 import { NavigationProp } from "@react-navigation/native";
 
 interface LoginProps {
@@ -23,7 +23,7 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
 
         setTimeout(() => {
           setLoading(false);
-          navigation.navigate("OTPScreen");
+          navigation.navigate(NAVIGATION.OTPSCREEN);
         }, 100);
       } catch (error) {
         setLoading(false);
@@ -53,9 +53,9 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
         autoFocus
       />
 
-      <TouchableOpacity 
-        style={styles.loginButton} 
-        onPress={handleLogin} 
+      <TouchableOpacity
+        style={styles.loginButton}
+        onPress={handleLogin}
         disabled={loading}
       >
         {loading ? (

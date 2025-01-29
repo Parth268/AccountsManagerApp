@@ -1,75 +1,122 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import {
+    View,
+    Text,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    TouchableWithoutFeedback,
+    Keyboard,
+    ActivityIndicator,
+    Alert,
+} from "react-native";
 import { useAuth } from "../../storage/context/AuthContext";
-import { useTranslation } from "react-i18next"; // Import translation hook
+import { useTranslation } from "react-i18next";
 
-const OTPScreen = () => {
-    const { t } = useTranslation(); // Hook to access translation
-    const [otp, setOtp] = useState("4532");
-    const inputRefs = useRef([]);
+const OTPScreen: React.FC = () => {
+    const { t } = useTranslation();
+    const [otp, setOtp] = useState<Array<string>>(Array(4).fill("2354"));
+    const inputRefs = useRef<Array<TextInput | null>>([]);
     const { login } = useAuth();
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        // Autofocus on the first input field when the component loads
         if (inputRefs.current[0]) {
             inputRefs.current[0].focus();
         }
     }, []);
 
-    const handleChange = (value, index) => {
-        const otpArray = otp.split("");
-        otpArray[index] = value;
-        setOtp(otpArray.join(""));
+    const handleChange = (value: string, index: number) => {
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
 
         // Focus on the next field if the current one is filled
         if (value && inputRefs.current[index + 1]) {
-            inputRefs.current[index + 1].focus();
+            if (inputRefs.current[index + 1]?.focus) {
+                inputRefs.current[index + 1]?.focus();
+            }
+        }
+
+        // Move to the previous field if backspace is pressed
+        if (!value && index > 0 && inputRefs.current[index - 1]) {
+            if (inputRefs.current[index - 1]?.focus) {
+                inputRefs.current[index - 1]?.focus();
+            }
         }
     };
 
-    const handleOnPress = () => {
-        // Handle OTP submission here
-        login("q3tw4yrh");
-    }
+    const handleOnPress = async () => {
+        if (otp.join("").length < 4) {
+            Alert.alert(t("error"), t("otp_incomplete"));
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await login(otp.join(""));
+        } catch (error) {
+            Alert.alert(t("error"), t("otp_verification_failed"));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const dismissKeyboard = () => {
+        Keyboard.dismiss();
+    };
 
     return (
-        <View style={styles.container}>
-            {/* Header */}
-            <View style={styles.headerContainer}>
-                <Text style={styles.title}>{t('verify_otp')}</Text>
-                <Text style={styles.subtitle}>{t('enter_otp_code')}</Text>
-            </View>
+        <KeyboardAvoidingView style={styles.container} behavior="padding">
+            <TouchableWithoutFeedback onPress={dismissKeyboard}>
+                <View style={styles.innerContainer}>
+                    {/* Header */}
+                    <View style={styles.headerContainer}>
+                        <Text style={styles.title}>{t("verify_otp")}</Text>
+                        <Text style={styles.subtitle}>{t("enter_otp_code")}</Text>
+                    </View>
 
-            {/* OTP Input */}
-            <View style={styles.otpInputContainer}>
-                {Array.from({ length: 4 }).map((_, index) => (
-                    <TextInput
-                        key={index}
-                        ref={(ref) => (inputRefs.current[index] = ref)}
-                        style={styles.otpInput}
-                        keyboardType="numeric"
-                        maxLength={1}
-                        value={otp[index] || ""}
-                        onChangeText={(value) => handleChange(value, index)}
-                        placeholderTextColor="#AAAAAA"
-                    />
-                ))}
-            </View>
+                    {/* OTP Input */}
+                    <View style={styles.otpInputContainer}>
+                        {Array.from({ length: 4 }).map((_, index) => (
+                            <TextInput
+                                key={index}
+                                ref={(ref) => (inputRefs.current[index] = ref)}
+                                style={[
+                                    styles.otpInput,
+                                    { borderColor: otp[index] ? "#000" : "#DDDDDD" },
+                                ]}
+                                keyboardType="numeric"
+                                maxLength={1}
+                                value={otp[index] || ""}
+                                onChangeText={(value) => handleChange(value, index)}
+                                placeholderTextColor="#AAAAAA"
+                            />
+                        ))}
+                    </View>
 
-            {/* Resend and Confirm */}
-            <View style={styles.actionContainer}>
-                <TouchableOpacity>
-                    <Text style={styles.resendText}>{t('resend_otp')}</Text>
-                </TouchableOpacity>
+                    {/* Resend and Confirm */}
+                    <View style={styles.actionContainer}>
+                        <TouchableOpacity>
+                            <Text style={styles.resendText}>{t("resend_otp")}</Text>
+                        </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.confirmButton}
-                    onPress={handleOnPress}
-                >
-                    <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+                        <TouchableOpacity
+                            style={styles.confirmButton}
+                            onPress={handleOnPress}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <ActivityIndicator color="#FFFFFF" />
+                            ) : (
+                                <Text style={styles.confirmButtonText}>{t("confirm")}</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -77,6 +124,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#ffffff",
+    },
+    innerContainer: {
+        flex: 1,
         justifyContent: "center",
         alignItems: "center",
         padding: 20,
@@ -131,12 +181,11 @@ const styles = StyleSheet.create({
     },
     confirmButton: {
         width: 300,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: "#000000", // Black button
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#000000",
         paddingVertical: 15,
         borderRadius: 15,
-        alignItems: "center",
         shadowColor: "#000000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,

@@ -1,54 +1,107 @@
-// ChangeThemeScreen.js
-import React from 'react';
-import { View, Text, Button, StyleSheet, useColorScheme } from 'react-native';
-import { useTheme } from '../../storage/context/ThemeContext';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+  useColorScheme,
+} from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Ensure this package is installed
+import { useTheme } from "../../storage/context/ThemeContext"; // Ensure useTheme is properly typed
+import { t } from "i18next"; // Ensure i18n is properly configured
 
-const ChangeThemeScreen = () => {
-    const { theme, toggleTheme } = useTheme();
-    const systemTheme = useColorScheme(); // Fetch system theme (light or dark)
 
-    const currentTheme = theme === 'light' ? 'Light' : 'Dark';
 
-    return (
+const ChangeThemeScreen  = () => {
+  const { theme, toggleTheme } = useTheme(); // Add proper types in ThemeContext
+  const systemTheme = useColorScheme(); // Fetch system theme (light or dark)
 
-        <View style={globalStyles.container}>
-            <View style={styles.header}>
-                <Pressable onPress={handleBackPress} style={styles.backButton}>
-                    <Icon name="arrow-back" size={24} color="#333" />
-                </Pressable>
-                <Text style={[globalStyles.textPrimary, styles.title]}>{t("settings")}</Text>
-            </View>
+  const currentTheme = theme === "light" ? "Light" : "Dark";
 
-            <ScrollView>
-                {/* ACCOUNT INFORMATION Section */}
-                <View style={styles.section}>
-                    <Text style={[globalStyles.textSecondary, styles.sectionTitle]}>{t("account_information")}</Text>
+  const handleBackPress = () => {
+    console.log("Back button pressed");
+    // Add your navigation logic here
+  };
 
-                    <Pressable onPress={toggleTheme} style={styles.item}>
-                        <Icon name="notifications-none" size={24} color="#444" style={styles.icon} />
-                        <Text style={globalStyles.textPrimary}>{t("notifications_reset")}</Text>
-                    </Pressable>
-                   
-                </View>
+  return (
+    <View style={styles.container}>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <Pressable onPress={handleBackPress} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color="#333" />
+        </Pressable>
+        <Text style={[styles.textPrimary, styles.title]}>{t("theme_change")}</Text>
+      </View>
 
-               
-            </ScrollView>
+      {/* Main Content */}
+      <ScrollView>
+        {/* Account Information Section */}
+        <View style={styles.section}>
+          <Text style={[styles.textSecondary, styles.sectionTitle]}>
+            {t("account_information")}
+          </Text>
 
-           
+          <Pressable onPress={toggleTheme} style={styles.item}>
+            <Icon
+              name="notifications-none"
+              size={24}
+              color="#444"
+              style={styles.icon}
+            />
+            <Text style={styles.textPrimary}>{t("notifications_reset")}</Text>
+          </Pressable>
         </View>
-    );
+      </ScrollView>
+    </View>
+  );
 };
 
+// Styles
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    title: {
-        fontSize: 20,
-        marginBottom: 20,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff", // Change based on theme if required
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#f5f5f5",
+  },
+  backButton: {
+    marginRight: 16,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  section: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  item: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  icon: {
+    marginRight: 16,
+  },
+  textPrimary: {
+    fontSize: 16,
+    color: "#000",
+  },
+  textSecondary: {
+    fontSize: 14,
+    color: "#666",
+  },
 });
 
 export default ChangeThemeScreen;

@@ -10,17 +10,30 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DEFAULTS } from "../../utils/constants"; // Assuming you have a constants file for default values
 import { useTranslation } from "react-i18next";
-import { StackActions } from '@react-navigation/native';
+import { StackActions, NavigationProp } from '@react-navigation/native';
 
-// import '../../locales/i18n'
+// Define the type for the language object
+interface Language {
+  id: string;
+  name: string;
+  symbol: string;
+  code: string;
+  bgColor: string;
+  symbolColor: string;
+}
 
-const ChagneLanguage = ({ navigation }) => {
-  const [selectedLanguage, setSelectedLanguage] = useState(null);
-  const [isLoading, setIsLoading] = useState(true)
+// Define the type for the component props
+interface ChagneLanguageProps {
+  navigation: NavigationProp<any>;
+}
+
+const ChagneLanguage: React.FC<ChagneLanguageProps> = ({ navigation }) => {
+  const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { t, i18n } = useTranslation();
 
   // List of languages to display
-  const languages = [
+  const languages: Language[] = [
     { id: "1", name: "Hindi", symbol: "अ", code: "hi", bgColor: "#DDEFFF", symbolColor: "#007AFF" },
     { id: "2", name: "English", symbol: "A", code: "en", bgColor: "#E8F5E9", symbolColor: "#2ECC71" },
     { id: "3", name: "Bengali", symbol: "আ", code: "bn", bgColor: "#FFF3E0", symbolColor: "#E67E22" },
@@ -59,11 +72,10 @@ const ChagneLanguage = ({ navigation }) => {
   }
 
   // Save the selected language to AsyncStorage and navigate to the Login screen
-  const handleLanguageSelect = async (language) => {
+  const handleLanguageSelect = async (language: Language) => {
     try {
-
       if (i18n && typeof i18n.changeLanguage === 'function') {
-        await i18n.changeLanguage(language);
+        await i18n.changeLanguage(language.code);
         await AsyncStorage.setItem(DEFAULTS.LANGUAGE, JSON.stringify(language));
         await AsyncStorage.setItem(DEFAULTS.IS_OPEN_FIRST_TIME, "true");
         setSelectedLanguage(language);
@@ -115,7 +127,6 @@ const ChagneLanguage = ({ navigation }) => {
         </View>
       }
     </>
-
   );
 };
 
@@ -178,4 +189,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ChagneLanguage;
+export default ChagneLanguage; 
