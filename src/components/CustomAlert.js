@@ -1,5 +1,6 @@
 // CustomAlert.js
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   View,
   Text,
@@ -9,6 +10,9 @@ import {
 } from "react-native";
 
 const CustomAlert = ({ visible, title, message, onClose, onConfirm }) => {
+
+  const { t } = useTranslation();
+
   return (
     <Modal
       transparent
@@ -22,17 +26,17 @@ const CustomAlert = ({ visible, title, message, onClose, onConfirm }) => {
           <Text style={styles.alertMessage}>{message}</Text>
           <View style={styles.alertActions}>
             <TouchableOpacity style={styles.alertButton} onPress={onClose}>
-              <Text style={styles.alertButtonText}>Cancel</Text>
+              <Text style={styles.alertButtonText}>{t('cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.alertButton, styles.confirmButton]}
               onPress={onConfirm}
             >
               <Text style={{
-                 fontSize: 16,
-                 color: "#ffffff",
-                 fontWeight: "bold",
-              }}>Confirm</Text>
+                fontSize: 16,
+                color: "#ffffff",
+                fontWeight: "bold",
+              }}>{t('confirm')}</Text>
             </TouchableOpacity>
           </View>
         </View>

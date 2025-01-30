@@ -6,6 +6,7 @@ import AppStack from "./AppStack";
 import AuthStack from "./AuthStack";
 
 const MainNavigator = () => {
+  
   const { isLoggedIn } = useAuth(); // Get authentication state from AuthContext
   const { theme, language } = useApp(); // Get theme and language from AppContext
 

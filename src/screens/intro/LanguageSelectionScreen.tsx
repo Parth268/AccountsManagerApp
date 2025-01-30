@@ -77,8 +77,8 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ navig
       if (i18n && typeof i18n.changeLanguage === 'function') {
         console.log(language?.code)
         await i18n.changeLanguage(language.code);
-        // await AsyncStorage.setItem(DEFAULTS.LANGUAGE, JSON.stringify(language));
-        // await AsyncStorage.setItem(DEFAULTS.IS_OPEN_FIRST_TIME, "true");
+        await AsyncStorage.setItem(DEFAULTS.LANGUAGE, JSON.stringify(language));
+        await AsyncStorage.setItem(DEFAULTS.IS_OPEN_FIRST_TIME, "true");
         setSelectedLanguage(language);
         console.log('Language saved successfully!');
       } else {

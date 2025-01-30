@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { Button, StatusBar, Text, View } from 'react-native';
+import { Button, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { I18nextProvider } from 'react-i18next';
 import MainNavigator from './src/navigation/MainNavigator';
 import { AuthProvider } from './src/storage/context/AuthContext';
 import { AppProvider } from './src/storage/context/AppContext';
-import { ThemeProvider } from './src/storage/context/ThemeContext';
+import { ThemeProvider, useAppTheme } from './src/storage/context/ThemeContext';
 import NotificationService from './src/services/NotificationService';
 import { ErrorBoundary } from 'react-error-boundary';
 import i18n from './src/locales/i18n';
@@ -23,6 +23,7 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary
 );
 
 const App = () => {
+
   useEffect(() => {
     let isMounted = true;
 
@@ -56,8 +57,9 @@ const App = () => {
           <AppProvider>
             <AuthProvider>
               <>
-                <StatusBar hidden backgroundColor="transparent" translucent />
-                <MainNavigator />
+                <SafeAreaView style={styles.container}>
+                  <MainNavigator />
+                </SafeAreaView>
               </>
             </AuthProvider>
           </AppProvider>
@@ -66,5 +68,15 @@ const App = () => {
     </ErrorBoundary>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  text: {
+    fontSize: 25,
+    fontWeight: '500',
+  },
+});
 
 export default App;

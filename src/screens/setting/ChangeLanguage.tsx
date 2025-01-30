@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DEFAULTS } from "../../utils/constants"; // Assuming you have a constants file for default values
+import { DEFAULTS, NAVIGATION } from "../../utils/constants"; // Assuming you have a constants file for default values
 import { useTranslation } from "react-i18next";
 import { StackActions, NavigationProp } from '@react-navigation/native';
 
@@ -56,10 +56,6 @@ const ChagneLanguage: React.FC<ChagneLanguageProps> = ({ navigation }) => {
         AsyncStorage.getItem(DEFAULTS.LANGUAGE),
         AsyncStorage.getItem(DEFAULTS.IS_OPEN_FIRST_TIME),
       ]);
-
-      if (savedLanguage && isFirstLanguage) {
-        navigation.navigate("Login");
-      }
 
       if (savedLanguage) {
         setSelectedLanguage(JSON.parse(savedLanguage));

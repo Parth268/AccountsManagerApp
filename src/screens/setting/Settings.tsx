@@ -6,7 +6,7 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from "react-native-vector-icons/MaterialIcons";
 import globalStyles from "../../styles/globalStyles";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../storage/context/AuthContext";
@@ -15,28 +15,23 @@ import { DEFAULTS, NAVIGATION } from "../../utils/constants";
 import PushNotification from "react-native-push-notification";
 import { Snackbar } from "../../components/Snackbar";
 import { NavigationProp } from "@react-navigation/native";
+import Header from "../../components/Header";
+import { useAppTheme } from "../../storage/context/ThemeContext"; // Import theme hook
 
 interface Props {
   navigation: NavigationProp<any>;
 }
 
-const SettingsScreen: React.FC<Props> = ({ navigation }) => {
+const Settings: React.FC<Props> = ({ navigation }) => {
   const { t } = useTranslation();
   const { logout } = useAuth();
+  const { theme, toggleTheme, themeProperties } = useAppTheme(); // Access theme context
   const [isAlertVisible, setAlertVisible] = useState<boolean>(false);
-  const [snackbarMessage, setSnackbarMessage] = useState<string>('');
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
   const triggerSnackbar = (textData: string = "") => {
     setSnackbarMessage(textData);
-    setTimeout(() => setSnackbarMessage(''), 3500); // Clear message after snackbar hides
-  };
-
-  const handleBackPress = () => {
-    if (navigation && navigation.goBack) {
-      navigation.goBack();
-    } else {
-      console.warn("No navigation prop available");
-    }
+    setTimeout(() => setSnackbarMessage(""), 2000); // Clear message after snackbar hides
   };
 
   const showAlert = () => setAlertVisible(true);
@@ -54,72 +49,86 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const handleOnNotificationReset = () => {
     PushNotification.cancelAllLocalNotifications();
     PushNotification.removeAllDeliveredNotifications();
-    triggerSnackbar("Notification Clean")
+    triggerSnackbar(t("notification_clean"));
   };
 
   return (
-    <View style={globalStyles.container}>
-      <View style={styles.header}>
-        <Pressable onPress={handleBackPress} style={styles.backButton} accessibilityLabel={t("back")}>
-          <Icon name="arrow-back" size={24} color="#333" />
-        </Pressable>
-        <Text style={[globalStyles.textPrimary, styles.title]}>{t("settings")}</Text>
-      </View>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: themeProperties.backgroundColor }, // Apply dynamic background color
+      ]}
+    >
+      <Header
+        navigation={navigation}
+        name={t("settings")}
+        isHome={false}
+        onBack={() => {}}
+        rightIcon={<></>}
+        phoneNumber={""}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* ACCOUNT INFORMATION Section */}
         <View style={styles.section}>
-          <Text style={[globalStyles.textSecondary, styles.sectionTitle]}>
-            {t("account_information")}
-          </Text>
-
           <Pressable
             onPress={handleOnNotificationReset}
-            style={({ pressed }) => [styles.item, { backgroundColor: pressed ? "#f0f0f0" : "transparent" }]}
+            style={({ pressed }) => [
+              styles.item,
+              { backgroundColor: pressed ? "#f0f0f0" : "transparent" },
+            ]}
             accessibilityLabel={t("reset_notifications_label")}
           >
-            <Icon name="notifications-none" size={24} color="#444" style={styles.icon} />
-            <Text style={globalStyles.textPrimary}>{t("notifications_reset")}</Text>
+            <Icon name="notifications-none" size={24} color={themeProperties.textColor} style={styles.icon} />
+            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
+              {t("notifications_reset")}
+            </Text>
           </Pressable>
+
           <Pressable
             onPress={() => handleNavigation(DEFAULTS.POLICY_URL)}
             style={styles.item}
             accessibilityLabel={t("privacy_policy")}
           >
-            <Icon name="privacy-tip" size={24} color="#444" style={styles.icon} />
-            <Text style={globalStyles.textPrimary}>{t("privacy_policy")}</Text>
+            <Icon name="privacy-tip" size={24} color={themeProperties.textColor} style={styles.icon} />
+            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
+              {t("privacy_policy")}
+            </Text>
           </Pressable>
+
           <Pressable
             onPress={() => handleNavigation(DEFAULTS.TERM_AND_CONDITION)}
             style={styles.item}
             accessibilityLabel={t("terms_and_conditions")}
           >
-            <Icon name="lock-outline" size={24} color="#444" style={styles.icon} />
-            <Text style={globalStyles.textPrimary}>{t("term_and_condition")}</Text>
+            <Icon name="lock-outline" size={24} color={themeProperties.textColor} style={styles.icon} />
+            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
+              {t("term_and_condition")}
+            </Text>
           </Pressable>
+
           <Pressable
-            onPress={() => navigation.navigate(NAVIGATION.CHANGE_THEME)}
+            onPress={toggleTheme} // Toggle theme dynamically
             style={styles.item}
             accessibilityLabel={t("theme_change")}
           >
-            <Icon name="color-lens" size={24} color={"#444"} style={styles.icon} />
-            <Text style={globalStyles.textPrimary}>{t("theme_change")}</Text>
+            <Icon name="color-lens" size={24} color={themeProperties.textColor} style={styles.icon} />
+            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
+              {theme === "light" ? t("theme_change") : t("theme_change")}
+            </Text>
           </Pressable>
+
           <Pressable
             onPress={() => navigation.navigate(NAVIGATION.CHANGE_LANGUAGE)}
             style={styles.item}
             accessibilityLabel={t("language_change")}
           >
-            <Icon name="language" size={24} color="#444" style={styles.icon} />
-            <Text style={globalStyles.textPrimary}>{t("language_change")}</Text>
+            <Icon name="language" size={24} color={themeProperties.textColor} style={styles.icon} />
+            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
+              {t("language_change")}
+            </Text>
           </Pressable>
-        </View>
 
-        {/* ACTIONS Section */}
-        <View style={styles.section}>
-          <Text style={[globalStyles.textSecondary, styles.sectionTitle]}>
-            {t("actions")}
-          </Text>
           <Pressable
             onPress={showAlert}
             style={[styles.item, styles.logoutItem]}
@@ -147,52 +156,26 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  backButton: {
-    marginRight: 15,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
+  container: {
     flex: 1,
-    textAlign: "center",
   },
   scrollContent: {
     paddingBottom: 20,
+    paddingHorizontal: 16,
   },
   section: {
-    marginTop: 20,
-    paddingVertical: 15,
-    borderRadius: 10,
+    flex: 1,
     marginHorizontal: 8,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 12,
   },
   item: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    paddingVertical: 16,
   },
   icon: {
     marginRight: 15,
   },
-  logoutItem: {
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-  },
+  logoutItem: {},
   logoutText: {
     color: "red",
     fontSize: 16,
@@ -200,4 +183,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SettingsScreen;
+export default Settings;
