@@ -1,37 +1,70 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator, StatusBar } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
-import { NAVIGATION, STORAGE_KEYS } from "../../utils/constants";
 import { NavigationProp } from "@react-navigation/native";
+import auth from '@react-native-firebase/auth';
+import { NAVIGATION, STORAGE_KEYS } from "../../utils/constants";
+import { useAuth } from "../../storage/context/AuthContext";
+import { Snackbar } from "../../components/Snackbar";
 
 interface LoginProps {
   navigation: NavigationProp<any>;
 }
 
 const Login: React.FC<LoginProps> = ({ navigation }) => {
+
   const { t } = useTranslation();
-  const [phoneNumber, setPhoneNumber] = useState<string>("9876543210");
+  const { login } = useAuth()
+  const [email, setEmail] = useState<string>("pvfgg@gmail.com");
+  const [password, setPassword] = useState<string>("1234567890Q");
   const [loading, setLoading] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
+  const triggerSnackbar = (textData: string = "") => {
+    setSnackbarMessage(textData);
+    setTimeout(() => setSnackbarMessage(""), 1000); // Clear message after snackbar hides
+  };
   const handleLogin = async () => {
-    if (phoneNumber.length === 10) {
-      setLoading(true);
-
-      try {
-        await AsyncStorage.setItem(STORAGE_KEYS.USER_PHONE_NUMBER, phoneNumber);
-
-        setTimeout(() => {
-          setLoading(false);
-          navigation.navigate(NAVIGATION.OTPSCREEN);
-        }, 100);
-      } catch (error) {
-        setLoading(false);
-        Alert.alert(t('error'), t('error_message'));
-      }
-    } else {
-      Alert.alert(t('invalid_phone_number_title'), t('invalid_phone_number'));
+    setLoading(true);
+    try {
+      // Store email in AsyncStorage
+      await AsyncStorage.setItem(STORAGE_KEYS.USER_EMAIL, email);
+      // Attempt to sign in using email and password
+      await signInWithEmailPassword();
+    } catch (error) {
+      setLoading(false);
+      Alert.alert(t('error'), t('error_message'));
     }
+  };
+
+  const signInWithEmailPassword = async () => {
+    try {
+      const userCredential = await auth().signInWithEmailAndPassword(email, password);
+      setLoading(false);
+      await AsyncStorage.setItem(STORAGE_KEYS.USER_EMAIL, email);
+      if (userCredential) {
+          await AsyncStorage.setItem(STORAGE_KEYS.USER_ID, userCredential?.user?.uid);
+          triggerSnackbar(String(t("login_success")));
+
+          setTimeout(()=>{
+              setLoading(false);
+              login(JSON.stringify(userCredential))
+          },800)
+
+      }
+      // Navigate to the next screen upon successful login
+      // Update with your home screen navigation
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+      Alert.alert(t('error'), t('login_failed'));
+    }
+  };
+
+  const handleRegisterNavigation = () => {
+    // Navigate to the registration screen
+    navigation.navigate(NAVIGATION.REGISTRATION);  // Update with your registration screen navigation
   };
 
   return (
@@ -41,29 +74,38 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
         <Text style={styles.subtitle}>{t('get_started')}</Text>
         <Text style={styles.description}>{t('login_description')}</Text>
       </View>
-
       <TextInput
         style={styles.input}
-        placeholder={t('phone_number_placeholder')}
-        keyboardType="numeric"
-        maxLength={10}
-        value={phoneNumber}
-        onChangeText={(text: string) => setPhoneNumber(text)}
+        placeholder={t('email_placeholder')}
+        keyboardType="email-address"
+        value={email}
+        onChangeText={(text: string) => setEmail(text)}
         placeholderTextColor="#AAAAAA"
         autoFocus
       />
-
-      <TouchableOpacity
-        style={styles.loginButton}
-        onPress={handleLogin}
-        disabled={loading}
-      >
+      <TextInput
+        style={styles.input}
+        placeholder={t('password_placeholder')}
+        secureTextEntry
+        value={password}
+        onChangeText={(text: string) => setPassword(text)}
+        placeholderTextColor="#AAAAAA"
+      />
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
         {loading ? (
           <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
           <Text style={styles.loginButtonText}>{t('login_button')}</Text>
         )}
       </TouchableOpacity>
+
+      {/* Registration Button */}
+      <TouchableOpacity style={styles.registerButton} onPress={handleRegisterNavigation}>
+        <Text style={styles.registerButtonText}>{t('register_button')}</Text>
+      </TouchableOpacity>
+
+      {snackbarMessage ? <Snackbar message={snackbarMessage} /> : null}
+
     </View>
   );
 };
@@ -76,15 +118,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
+  description: {
+    fontSize: 14,
+    color: "#666666",
+    textAlign: "center",
+    marginVertical: 15,
+  },
   headerContainer: {
     marginBottom: 30,
     alignItems: "center",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#333333",
-    textAlign: "center",
   },
   subtitle: {
     fontSize: 22,
@@ -92,11 +134,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 5,
   },
-  description: {
-    fontSize: 14,
-    color: "#666666",
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#333333",
     textAlign: "center",
-    marginVertical: 15,
   },
   input: {
     width: "90%",
@@ -108,11 +150,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderWidth: 1,
     borderColor: "#DDDDDD",
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
     color: "#333333",
   },
   loginButton: {
@@ -122,15 +159,19 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: "center",
     marginTop: 30,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
   },
   loginButtonText: {
     fontSize: 16,
     color: "#FFFFFF",
+    fontWeight: "bold",
+  },
+  registerButton: {
+    alignItems: "center",
+    marginTop: 25,
+  },
+  registerButtonText: {
+    fontSize: 16,
+    color: "#000000",
     fontWeight: "bold",
   },
 });

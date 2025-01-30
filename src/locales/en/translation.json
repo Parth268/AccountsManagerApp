@@ -40,7 +40,20 @@
   "logout_message": "You have successfully logged out.",
   "light": "Change to Light Mode",
   "dark": "Change to Dark Mode",
-  "web":"Web",
-  "notification_clean":"Notification Clean",
-  "cancel":"Cancel"
+  "web": "Web",
+  "notification_clean": "Notification Clean",
+  "cancel": "Cancel",
+  "create_account": "Create Account",
+  "signup_description": "Sign up with your email address.",
+  "email_placeholder": "Enter your email address",
+  "password_placeholder": "Enter your password",
+  "register_button": "Sign Up",
+  "have_account": "Already have an account? Log in",
+  "registration_failed": "Registration failed. Please try again.",
+  "confirm_password_placeholder": "Enter your confirm password",
+  "password_required_length":"Password should be at least 6 characters",
+  "password_mismatch":"Password should be Match",
+  "login_success":"Login Success",
+  "customer":"Customer",
+  "supplier":"Supplier"
 }

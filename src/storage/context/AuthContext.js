@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (token) => {
     try {
-      await AsyncStorage.setItem(DEFAULTS.USER_TOKEN, token);
+      await AsyncStorage.setItem(DEFAULTS.USER_DATA_ID, token);
       setIsLoggedIn(true);
       setError(null); // Clear any previous errors
     } catch (error) {
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem(DEFAULTS.USER_TOKEN);
+      await AsyncStorage.removeItem(DEFAULTS.USER_DATA_ID);
       setIsLoggedIn(false);
       setError(null); // Clear any previous errors
     } catch (error) {

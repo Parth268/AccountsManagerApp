@@ -27,20 +27,20 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
   const { t } = useTranslation();
   const { themeProperties } = useAppTheme();
-  const [activeTab, setActiveTab] = useState<string>("transaction");
+  const [activeTab, setActiveTab] = useState<string>("customer");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
   const [isAlertVisible, setAlertVisible] = useState(false);
   const { theme } = useAppTheme();
 
-  const tabIndicator = new Animated.Value(activeTab === "transaction" ? 0 : 1);
+  const tabIndicator = new Animated.Value(activeTab === "customer" ? 0 : 1);
 
   useEffect(() => {
     const fetchPhoneNumber = async () => {
       try {
         const storedNumber = await AsyncStorage.getItem(
-          STORAGE_KEYS.USER_PHONE_NUMBER
+          STORAGE_KEYS.USER_EMAIL
         );
         setPhoneNumber(storedNumber || "Not Available");
       } catch (error) {
@@ -54,14 +54,14 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
   const switchTab = (tab: string) => {
     setActiveTab(tab);
     Animated.spring(tabIndicator, {
-      toValue: tab === "transaction" ? 0 : 1,
+      toValue: tab === "customer" ? 0 : 1,
       useNativeDriver: false,
     }).start();
   };
 
   const tabIndicatorTranslateX = tabIndicator.interpolate({
     inputRange: [0, 1],
-    outputRange: [0,  (width / 2)],
+    outputRange: [0, (width / 2)],
   });
 
   const showAlert = () => setAlertVisible(true);
@@ -102,10 +102,12 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
       </View>
 
       {/* Tab Navigation */}
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, {
+        backgroundColor: theme === 'light' ? "#ffffff" : "#808080",
+      }]}>
         <TouchableOpacity
           style={styles.tab}
-          onPress={() => switchTab("transaction")}
+          onPress={() => switchTab("customer")}
         >
           <Text
             style={[
@@ -113,13 +115,13 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
               styles.activeTabText,
             ]}
           >
-            {t("transaction_details")}
+            {t("customer")}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.tab}
-          onPress={() => switchTab("party")}
+          onPress={() => switchTab("supplier")}
         >
           <Text
             style={[
@@ -127,7 +129,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
               styles.activeTabText,
             ]}
           >
-            {t("party_details")}
+            {t("supplier")}
           </Text>
         </TouchableOpacity>
         <Animated.View
@@ -144,7 +146,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
 
       {/* Tab Content */}
       <ScrollView style={styles.contentContainer}>
-        {activeTab === "transaction" && (
+        {activeTab === "customer" && (
           <View>
             <Text style={styles.heading}>{t("transaction_details")}</Text>
             <Text style={styles.description}>
@@ -152,7 +154,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
             </Text>
           </View>
         )}
-        {activeTab === "party" && (
+        {activeTab === "supplier" && (
           <View>
             <Text style={styles.heading}>{t("party_details")}</Text>
             <Text style={styles.description}>{t("manage_party_details")}</Text>
@@ -201,7 +203,6 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: "row",
-    backgroundColor: "#ffffff",
     borderRadius: 10,
     marginHorizontal: 16,
     shadowColor: "#000",
