@@ -31,6 +31,7 @@ const globalStyles = StyleSheet.create({
     fontSize: FONTS.sizes.md,
     fontFamily: FONTS.bold,
   },
+ 
   errorText: {
     color: COLORS.error,
     fontSize: FONTS.sizes.sm,

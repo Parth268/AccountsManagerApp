@@ -7,7 +7,7 @@ import Settings from "../screens/setting/Settings";
 import WebViewScreen from "../screens/webview/WebView";
 import ChangeLanguage from "../screens/setting/ChangeLanguage";
 import ChangeThemeScreen from "../screens/setting/ChangeTheme";
-
+import ChangePassword from "../screens/setting/ChangePassword";
 const Stack = createNativeStackNavigator();
 
 const AppStack = () => {
@@ -16,6 +16,7 @@ const AppStack = () => {
       <Stack.Screen name={NAVIGATION.DASHBOARD} component={DashBoard} options={{ headerShown: false }} />
       <Stack.Screen name={NAVIGATION.SETTING} component={Settings} options={{ headerShown: false }} />
       <Stack.Screen name={NAVIGATION.WEBVIEW} component={WebViewScreen} options={{ headerShown: false }} />
+      <Stack.Screen name={NAVIGATION.CHANGE_PASSWORD} component={ChangePassword} options={{ headerShown: false }} />
       <Stack.Screen name={NAVIGATION.CHANGE_THEME} component={ChangeThemeScreen} options={{ headerShown: false }} />
       <Stack.Screen name={NAVIGATION.CHANGE_LANGUAGE} component={ChangeLanguage} options={{ headerShown: false }} />
     </Stack.Navigator>

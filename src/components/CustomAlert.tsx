@@ -1,4 +1,3 @@
-// CustomAlert.js
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -8,10 +7,26 @@ import {
   Modal,
   StyleSheet,
 } from "react-native";
+import { useAppTheme } from "../storage/context/ThemeContext"; // Import your theme provider
+import globalStyles from "../styles/globalStyles"; // Import global styles
 
-const CustomAlert = ({ visible, title, message, onClose, onConfirm }) => {
+interface CustomAlertProps {
+  visible: boolean;
+  title: string;
+  message: string;
+  onClose: () => void;
+  onConfirm: () => void;
+}
 
+const CustomAlert: React.FC<CustomAlertProps> = ({
+  visible,
+  title,
+  message,
+  onClose,
+  onConfirm,
+}) => {
   const { t } = useTranslation();
+  const { themeProperties } = useAppTheme();
 
   return (
     <Modal
@@ -20,23 +35,48 @@ const CustomAlert = ({ visible, title, message, onClose, onConfirm }) => {
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.alertOverlay}>
-        <View style={styles.alertContainer}>
-          <Text style={styles.alertTitle}>{title}</Text>
-          <Text style={styles.alertMessage}>{message}</Text>
+      <View style={[styles.alertOverlay]}>
+        <View
+          style={[
+            styles.alertContainer,
+            { backgroundColor: themeProperties.backgroundColor },
+          ]}
+        >
+          <Text
+            style={[
+              styles.alertTitle,
+              { color: themeProperties.textColor },
+            ]}
+          >
+            {title}
+          </Text>
+          <Text
+            style={[
+              styles.alertMessage,
+              { color: themeProperties.textColor },
+            ]}
+          >
+            {message}
+          </Text>
           <View style={styles.alertActions}>
-            <TouchableOpacity style={styles.alertButton} onPress={onClose}>
-              <Text style={styles.alertButtonText}>{t('cancel')}</Text>
+            <TouchableOpacity
+              style={styles.alertButton}
+              onPress={onClose}
+            >
+              <Text
+                style={[
+                  styles.alertButtonText,
+                  { color: themeProperties.textColor },
+                ]}
+              >
+                {t("cancel")}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.alertButton, styles.confirmButton]}
               onPress={onConfirm}
             >
-              <Text style={{
-                fontSize: 16,
-                color: "#ffffff",
-                fontWeight: "bold",
-              }}>{t('confirm')}</Text>
+              <Text style={globalStyles.buttonText}>{t("confirm")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -54,7 +94,6 @@ const styles = StyleSheet.create({
   },
   alertContainer: {
     width: "80%",
-    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
     shadowColor: "#000",
@@ -67,11 +106,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
-    color: "#333",
   },
   alertMessage: {
     fontSize: 16,
-    color: "#555",
     marginBottom: 20,
   },
   alertActions: {
@@ -89,7 +126,6 @@ const styles = StyleSheet.create({
   },
   alertButtonText: {
     fontSize: 16,
-    color: "#007bff",
     fontWeight: "bold",
   },
 });

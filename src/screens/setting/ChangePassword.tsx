@@ -2,73 +2,74 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
+  StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import auth from "@react-native-firebase/auth";
 import { useTranslation } from "react-i18next";
 import { NavigationProp } from "@react-navigation/native";
-import auth from "@react-native-firebase/auth";
-import { useAuth } from "../../storage/context/AuthContext";
-import { useAppTheme } from "../../storage/context/ThemeContext";
 import { Snackbar } from "../../components/Snackbar";
+import { useAppTheme } from "../../storage/context/ThemeContext";
 
-interface RegisterProps {
+interface ChangePasswordProps {
   navigation: NavigationProp<any>;
 }
 
-const Register: React.FC<RegisterProps> = ({ navigation }) => {
+const ChangePassword: React.FC<ChangePasswordProps> = ({ navigation }) => {
   const { t } = useTranslation();
-  const { login } = useAuth();
   const { theme, themeProperties } = useAppTheme();
 
-  const [email, setEmail] = useState<string>("parth26.8patel@gmail.com");
-  const [password, setPassword] = useState<string>("1234567890Q");
-  const [confirmPassword, setConfirmPassword] = useState<string>("1234567890Q");
+  const [currentPassword, setCurrentPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
   const triggerSnackbar = (message: string = "") => {
     setSnackbarMessage(message);
-    setTimeout(() => setSnackbarMessage(""), 2000); // Clear after 2 seconds
+    setTimeout(() => setSnackbarMessage(""), 2000); // Clear message after 2 seconds
   };
 
-  const handleRegister = async () => {
-    setLoading(true);
-    if (password !== confirmPassword) {
-      setLoading(false);
-      triggerSnackbar(t("password_mismatch"));
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      triggerSnackbar(t("error_message"));
       return;
     }
 
-    if (password.length < 6) {
-      setLoading(false);
+    if (newPassword.length < 6) {
       triggerSnackbar(t("password_required_length"));
       return;
     }
 
-    try {
-      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
-      if (userCredential) {
-        await AsyncStorage.setItem("USER_EMAIL", email);
-        await AsyncStorage.setItem("USER_ID", userCredential.user.uid);
-        triggerSnackbar(t("register_success"));
+    if (newPassword !== confirmPassword) {
+      triggerSnackbar(t("password_mismatch"));
+      return;
+    }
 
-        setTimeout(() => {
-          setLoading(false);
-          login(JSON.stringify(userCredential));
-        }, 500);
-      }
+    setLoading(true);
+    try {
+      const user = auth().currentUser;
+      if (!user || !user.email) throw new Error("User not authenticated");
+
+      // Re-authenticate user
+      const credential = auth.EmailAuthProvider.credential(
+        user.email,
+        currentPassword
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      // Update password
+      await user.updatePassword(newPassword);
+      setLoading(false);
+      triggerSnackbar(t("password_updated"));
+      setTimeout(() => navigation.goBack(), 1000);
     } catch (error) {
       setLoading(false);
-      triggerSnackbar(t("register_failed"));
+      console.error(error);
+      triggerSnackbar(t("reset_failed"));
     }
-  };
-
-  const handleLoginNavigation = () => {
-    navigation.goBack();
   };
 
   const dynamicStyles = StyleSheet.create({
@@ -103,7 +104,7 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
       alignItems: "center",
       marginTop: 30,
     },
-    buttondark: {
+    buttonDark: {
       width: "90%",
       backgroundColor: "#808080",
       paddingVertical: 15,
@@ -116,10 +117,10 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
       fontWeight: "bold",
       fontSize: 16,
     },
-    loginButton: {
+    backButton: {
       marginTop: 25,
     },
-    loginButtonText: {
+    backButtonText: {
       color: themeProperties.textColor,
       fontSize: 16,
       fontWeight: "bold",
@@ -130,27 +131,24 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
     <View style={dynamicStyles.container}>
       <View style={{ marginBottom: 30, alignItems: "center" }}>
         <Text style={[dynamicStyles.text, { fontSize: 28, fontWeight: "bold" }]}>
-          {t("create_account")}
-        </Text>
-        <Text style={[dynamicStyles.text, { fontSize: 22, marginTop: 5 }]}>
-          {t("signup_description")}
+          {t("change_password")}
         </Text>
       </View>
 
       <TextInput
         style={dynamicStyles.input}
-        placeholder={t("email_placeholder")}
-        keyboardType="email-address"
-        value={email}
-        onChangeText={(text) => setEmail(text)}
+        placeholder={t("current_password_placeholder")}
+        secureTextEntry
+        value={currentPassword}
+        onChangeText={(text: string) => setCurrentPassword(text)}
         placeholderTextColor="#AAAAAA"
       />
       <TextInput
         style={dynamicStyles.input}
-        placeholder={t("password_placeholder")}
+        placeholder={t("new_password_placeholder")}
         secureTextEntry
-        value={password}
-        onChangeText={(text) => setPassword(text)}
+        value={newPassword}
+        onChangeText={(text: string) => setNewPassword(text)}
         placeholderTextColor="#AAAAAA"
       />
       <TextInput
@@ -158,24 +156,27 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
         placeholder={t("confirm_password_placeholder")}
         secureTextEntry
         value={confirmPassword}
-        onChangeText={(text) => setConfirmPassword(text)}
+        onChangeText={(text: string) => setConfirmPassword(text)}
         placeholderTextColor="#AAAAAA"
       />
 
       <TouchableOpacity
-        style={theme === "light" ? dynamicStyles.button : dynamicStyles.buttondark}
-        onPress={handleRegister}
+        style={theme === "light" ? dynamicStyles.button : dynamicStyles.buttonDark}
+        onPress={handleChangePassword}
         disabled={loading}
       >
         {loading ? (
           <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
-          <Text style={dynamicStyles.buttonText}>{t("register_button")}</Text>
+          <Text style={dynamicStyles.buttonText}>{t("confirm")}</Text>
         )}
       </TouchableOpacity>
 
-      <TouchableOpacity style={dynamicStyles.loginButton} onPress={handleLoginNavigation}>
-        <Text style={dynamicStyles.loginButtonText}>{t("have_account")}</Text>
+      <TouchableOpacity
+        style={dynamicStyles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={dynamicStyles.backButtonText}>{t("go_back")}</Text>
       </TouchableOpacity>
 
       {snackbarMessage ? <Snackbar message={snackbarMessage} /> : null}
@@ -183,4 +184,4 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
   );
 };
 
-export default Register;
+export default ChangePassword;

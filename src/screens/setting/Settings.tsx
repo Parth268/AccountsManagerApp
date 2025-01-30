@@ -63,7 +63,7 @@ const Settings: React.FC<Props> = ({ navigation }) => {
         navigation={navigation}
         name={t("settings")}
         isHome={false}
-        onBack={() => {}}
+        onBack={() => { }}
         rightIcon={<></>}
         phoneNumber={""}
       />
@@ -112,9 +112,9 @@ const Settings: React.FC<Props> = ({ navigation }) => {
             style={styles.item}
             accessibilityLabel={t("theme_change")}
           >
-            <Icon name="color-lens" size={24} color={themeProperties.textColor} style={styles.icon} />
+            <Icon name={theme === "dark" ? "light-mode" : "dark-mode"} size={24} color={themeProperties.textColor} style={styles.icon} />
             <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
-              {theme === "light" ? t("theme_change") : t("theme_change")}
+              {theme === "light" ? t("dark_mode") : t("light_mode")}
             </Text>
           </Pressable>
 
@@ -126,6 +126,17 @@ const Settings: React.FC<Props> = ({ navigation }) => {
             <Icon name="language" size={24} color={themeProperties.textColor} style={styles.icon} />
             <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
               {t("language_change")}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => navigation.navigate(NAVIGATION.CHANGE_PASSWORD)}
+            style={styles.item}
+            accessibilityLabel={t("change_password")}
+          >
+            <Icon name="password" size={24} color={themeProperties.textColor} style={styles.icon} />
+            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
+              {t("change_password")}
             </Text>
           </Pressable>
 
