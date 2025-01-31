@@ -71,5 +71,11 @@
   "change_password": "Change Password",
   "current_password_placeholder": "Enter your current password",
   "new_password_placeholder": "Enter your new password",
-  "password_updated": "Password updated successfully!"
+  "password_updated": "Password updated successfully!",
+  "send": "Send",
+  "receive": "Receive",
+  "add_customer": "Add Customer",
+  "add_supplier": "Add Supplier",
+  "call": "Call",
+  "message": "Message"
 }

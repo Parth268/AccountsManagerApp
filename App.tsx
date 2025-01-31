@@ -9,6 +9,7 @@ import NotificationService from './src/services/NotificationService';
 import { ErrorBoundary } from 'react-error-boundary';
 import i18n from './src/locales/i18n';
 import firebase from '@react-native-firebase/app'; // Import Firebase
+import 'firebase/database';
 
 type ErrorFallbackProps = {
   error: Error;
@@ -16,12 +17,13 @@ type ErrorFallbackProps = {
 };
 
 const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary }) => (
-  <View>
-    <Text>{"Something went wrong."}</Text>
-    <Text>{error.message}</Text>
-    <Button onPress={resetErrorBoundary} title="Try again" />
+  <View style={styles.container}>
+    <Text style={styles.title}>Something went wrong.</Text>
+    <Text style={styles.message}>{error.message}</Text>
+    <Button onPress={resetErrorBoundary} title="Try again" color="#007BFF" />
   </View>
 );
+
 
 const App = () => {
 
@@ -94,6 +96,22 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    // padding: 20,
+    // backgroundColor: '#f8f9fa',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  message: {
+    fontSize: 16,
+    color: '#555',
+    marginBottom: 20,
+    textAlign: 'center',
   },
 });
 

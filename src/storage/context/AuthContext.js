@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const userToken = await AsyncStorage.getItem(DEFAULTS.USER_TOKEN);
+        const userToken = await AsyncStorage.getItem(DEFAULTS.USER_DATA_ID);
         setIsLoggedIn(!!userToken);
       } catch (error) {
         console.error("Failed to load login status:", error);
