@@ -1,14 +1,26 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ActivityIndicator, View, Text, StyleSheet, Modal } from "react-native"; 
+import { ActivityIndicator, View, Text, StyleSheet, Modal } from "react-native";
 import { DEFAULTS } from "../../utils/constants";
 
-const AuthContext = createContext();
+// Define types for AuthContext
+interface AuthContextType {
+  isLoggedIn: boolean;
+  login: (token: string) => Promise<void>;
+  logout: () => Promise<void>;
+}
 
-export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // New loading state
-  const [error, setError] = useState(null); // For error messages
+// Define types for the AuthProvider props
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // New loading state
+  const [error, setError] = useState<string | null>(null); // For error messages
 
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -25,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     checkLoginStatus();
   }, []);
 
-  const login = async (token) => {
+  const login = async (token: string) => {
     try {
       await AsyncStorage.setItem(DEFAULTS.USER_DATA_ID, token);
       setIsLoggedIn(true);
@@ -73,7 +85,13 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
 
 const styles = StyleSheet.create({
   loadingContainer: {

@@ -8,9 +8,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DEFAULTS, NAVIGATION } from "../../utils/constants"; // Assuming you have a constants file for default values
+import { DEFAULTS } from "../../utils/constants"; // Assuming you have a constants file for default values
 import { useTranslation } from "react-i18next";
 import { StackActions, NavigationProp } from '@react-navigation/native';
+import { useAppTheme } from "../../storage/context/ThemeContext"; // Import the theme hook
 
 // Define the type for the language object
 interface Language {
@@ -27,7 +28,8 @@ interface ChagneLanguageProps {
   navigation: NavigationProp<any>;
 }
 
-const ChagneLanguage: React.FC<ChagneLanguageProps> = ({ navigation }) => {
+const ChangeLanguage: React.FC<ChagneLanguageProps> = ({ navigation }) => {
+  const { theme, themeProperties } = useAppTheme(); // Get theme properties
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { t, i18n } = useTranslation();
@@ -52,11 +54,7 @@ const ChagneLanguage: React.FC<ChagneLanguageProps> = ({ navigation }) => {
 
   const loadLanguage = async () => {
     try {
-      const [savedLanguage, isFirstLanguage] = await Promise.all([
-        AsyncStorage.getItem(DEFAULTS.LANGUAGE),
-        AsyncStorage.getItem(DEFAULTS.IS_OPEN_FIRST_TIME),
-      ]);
-
+      const savedLanguage = await AsyncStorage.getItem(DEFAULTS.LANGUAGE);
       if (savedLanguage) {
         setSelectedLanguage(JSON.parse(savedLanguage));
       }
@@ -65,7 +63,7 @@ const ChagneLanguage: React.FC<ChagneLanguageProps> = ({ navigation }) => {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   // Save the selected language to AsyncStorage and navigate to the Login screen
   const handleLanguageSelect = async (language: Language) => {
@@ -88,17 +86,17 @@ const ChagneLanguage: React.FC<ChagneLanguageProps> = ({ navigation }) => {
 
   return (
     <>
-      {isLoading ?
-        <View style={styles.container}>
+      {isLoading ? (
+        <View style={[styles.container, { backgroundColor: themeProperties.backgroundColor }]}>
           <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#6200ee" />
-            <Text style={styles.loadingText}>Loading...</Text>
+            <ActivityIndicator size="large" color={themeProperties.textColor} />
+            <Text style={[styles.loadingText, { color: themeProperties.textColor }]}>Loading...</Text>
           </View>
         </View>
-        :
-        <View style={styles.container}>
-          <Text style={styles.title}>Choose Language</Text>
-          <Text style={styles.subtitle}>भाषा चुनें</Text>
+      ) : (
+        <View style={[styles.container, { backgroundColor: themeProperties.backgroundColor }]}>
+          <Text style={[styles.title, { color: themeProperties.textColor }]}>Choose Language</Text>
+          <Text style={[styles.subtitle, { color: themeProperties.textColor }]}>भाषा चुनें</Text>
 
           <FlatList
             data={languages}
@@ -116,12 +114,12 @@ const ChagneLanguage: React.FC<ChagneLanguageProps> = ({ navigation }) => {
                 <Text style={[styles.languageSymbol, { color: item.symbolColor }]}>
                   {item.symbol}
                 </Text>
-                <Text style={styles.languageName}>{item.name}</Text>
+                <Text style={[styles.languageName, { color: themeProperties.lightbgtextColor }]}>{item.name}</Text>
               </TouchableOpacity>
             )}
           />
         </View>
-      }
+      )}
     </>
   );
 };
@@ -129,11 +127,10 @@ const ChagneLanguage: React.FC<ChagneLanguageProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
     paddingVertical: 20,
     paddingHorizontal: 15,
     justifyContent: 'center',
-    paddingTop: 50
+    paddingTop: 50,
   },
   loaderContainer: {
     justifyContent: 'center',
@@ -142,19 +139,16 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#6200ee',
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#000000",
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 18,
     textAlign: "center",
-    color: "#555555",
     marginBottom: 20,
   },
   languageButton: {
@@ -180,9 +174,8 @@ const styles = StyleSheet.create({
   },
   languageName: {
     fontSize: 14,
-    color: "#555555",
     marginTop: 5,
   },
 });
 
-export default ChagneLanguage; 
+export default ChangeLanguage;

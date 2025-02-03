@@ -5,11 +5,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Define default constants
 const DEFAULTS = {
   APP_THEME: "appTheme", // Key to save theme in AsyncStorage
+  APP_THEME_STATUS: "APP_THEME_STATUS",
 };
 
 // Define the theme structure
 interface Theme {
   textColor: string;
+  lightbgtextColor: string;
   backgroundColor: string;
   textSize: number;
 }
@@ -17,7 +19,9 @@ interface Theme {
 // Define the theme context type
 interface ThemeContextType {
   theme: "light" | "dark";
+  themeStatus: boolean,
   toggleTheme: () => void;
+  toggleThemeStatus: (value: boolean) => void;
   themeProperties: Theme;
 }
 
@@ -25,11 +29,13 @@ interface ThemeContextType {
 const themes: Record<"light" | "dark", Theme> = {
   light: {
     textColor: "#000000",
+    lightbgtextColor: "#000000",
     backgroundColor: "#FFFFFF",
     textSize: 16,
   },
   dark: {
     textColor: "#FFFFFF",
+    lightbgtextColor: "#444444",
     backgroundColor: "#121212",
     textSize: 18,
   },
@@ -61,45 +67,62 @@ interface ThemeProviderProps {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const systemTheme = useSystemTheme();
   const [theme, setTheme] = useState<"light" | "dark">(systemTheme);
+  const [themeStatus, setThemeStatus] = useState(true);
 
   // Load saved theme from AsyncStorage on mount
   useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const savedTheme = await AsyncStorage.getItem(DEFAULTS.APP_THEME);
-        if (savedTheme) {
-          setTheme(JSON.parse(savedTheme));
-        }
-      } catch (error) {
-        console.error("Failed to load theme from AsyncStorage", error);
-      }
-    };
+
 
     loadTheme();
   }, []);
 
   // Save theme to AsyncStorage whenever it changes
   useEffect(() => {
-    const saveTheme = async () => {
-      try {
-        await AsyncStorage.setItem(DEFAULTS.APP_THEME, JSON.stringify(theme));
-      } catch (error) {
-        console.error("Failed to save theme to AsyncStorage", error);
-      }
-    };
+
 
     saveTheme();
   }, [theme]);
 
+  const loadTheme = async () => {
+    try {
+      const appThemeStatus = await AsyncStorage.getItem(DEFAULTS.APP_THEME_STATUS);
+      if (appThemeStatus) {
+        const savedTheme = await AsyncStorage.getItem(DEFAULTS.APP_THEME);
+        if (savedTheme) {
+          setTheme(JSON.parse(savedTheme));
+        }
+      }
+      if (appThemeStatus) {
+        setThemeStatus(JSON.parse(appThemeStatus));
+      }
+    } catch (error) {
+      console.error("Failed to load theme from AsyncStorage", error);
+    }
+  };
+
+  const saveTheme = async () => {
+    try {
+      await AsyncStorage.setItem(DEFAULTS.APP_THEME, JSON.stringify(theme));
+    } catch (error) {
+      console.error("Failed to save theme to AsyncStorage", error);
+    }
+  };
   // Toggle between light and dark themes
   const toggleTheme = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
+  const toggleThemeStatus = (value: boolean) => {
+    setThemeStatus(value)
+    if (value) {
+      setTheme(systemTheme)
+    }
+  }
+
   const themeProperties = themes[theme];
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, themeProperties }}>
+    <ThemeContext.Provider value={{ theme, themeStatus, toggleTheme, toggleThemeStatus, themeProperties }}>
       {children}
     </ThemeContext.Provider>
   );

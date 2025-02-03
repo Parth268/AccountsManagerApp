@@ -31,7 +31,7 @@ interface Props {
   transation: Transaction[];
 }
 
-const CustomerList = ({ transation }: Props) => {
+const CustomerList: React.FC<Props>  = ({ transation }: Props) => {
   const { t } = useTranslation();
   const { theme, themeProperties } = useAppTheme();
   const [customersTransation, setCustomersTransation] = useState<Transaction[]>(transation);
@@ -102,9 +102,9 @@ const CustomerList = ({ transation }: Props) => {
             }]} >
               {
                 item?.type === 'send' ? (
-                  <Text style={styles.sendMoneyText}>{t('send')} {item?.amount}</Text>
+                  <Text style={styles.sendMoneyText}>{item?.amount}</Text>
                 ) : (
-                  <Text style={styles.sendMoneyText}>{t('receive')} {item?.amount}</Text>
+                  <Text style={styles.sendMoneyText}>{item?.amount}</Text>
                 )
               }
             </View>

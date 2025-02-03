@@ -5,33 +5,50 @@ import {
   Text,
   Pressable,
   ScrollView,
+  Switch,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import globalStyles from "../../styles/globalStyles";
+import { useAppTheme } from "../../storage/context/ThemeContext";
+import Header from "../../components/Header";
+import PushNotification from "react-native-push-notification";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../storage/context/AuthContext";
-import CustomAlert from "../../components/CustomAlert";
 import { DEFAULTS, NAVIGATION } from "../../utils/constants";
-import PushNotification from "react-native-push-notification";
+import { useLanguage } from "../../storage/context/LanguageContext";
+import CustomAlert from "../../components/CustomAlert";
 import { Snackbar } from "../../components/Snackbar";
-import { NavigationProp } from "@react-navigation/native";
-import Header from "../../components/Header";
-import { useAppTheme } from "../../storage/context/ThemeContext"; // Import theme hook
 
-interface Props {
-  navigation: NavigationProp<any>;
+interface SettingsProps {
+  navigation: any;
 }
 
-const Settings: React.FC<Props> = ({ navigation }) => {
+interface LanguageType {
+  id: string;
+  name: string;
+  symbol: string;
+  code: string;
+  bgColor: string;
+  symbolColor: string;
+}
+
+interface LanguageContextType {
+  language: LanguageType;
+  changeLanguage: (lng: string) => Promise<void>;
+}
+
+const Settings: React.FC<SettingsProps> = ({ navigation }) => {
   const { t } = useTranslation();
   const { logout } = useAuth();
-  const { theme, toggleTheme, themeProperties } = useAppTheme(); // Access theme context
+  const { language } = useLanguage();
+  const { theme, toggleTheme, toggleThemeStatus, themeProperties, themeStatus } = useAppTheme();
   const [isAlertVisible, setAlertVisible] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
+  const iconColor = theme === "light" ? "#333" : "#fff";
+
   const triggerSnackbar = (textData: string = "") => {
     setSnackbarMessage(textData);
-    setTimeout(() => setSnackbarMessage(""), 2000); // Clear message after snackbar hides
+    setTimeout(() => setSnackbarMessage(""), 2000);
   };
 
   const showAlert = () => setAlertVisible(true);
@@ -41,6 +58,14 @@ const Settings: React.FC<Props> = ({ navigation }) => {
     hideAlert();
     logout();
   };
+
+  const handleThemeChange = () => {
+    if (!themeStatus) {
+      toggleTheme()
+    } else {
+      triggerSnackbar(t("auto_dark_mode_on"));
+    }
+  }
 
   const handleNavigation = (url: string = "") => {
     navigation.navigate(NAVIGATION.WEBVIEW, { url });
@@ -53,12 +78,7 @@ const Settings: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: themeProperties.backgroundColor }, // Apply dynamic background color
-      ]}
-    >
+    <View style={[styles.container, { backgroundColor: themeProperties.backgroundColor }]}>
       <Header
         navigation={navigation}
         name={t("settings")}
@@ -69,87 +89,71 @@ const Settings: React.FC<Props> = ({ navigation }) => {
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* ACCOUNT INFORMATION Section */}
-        <View style={styles.section}>
-          <Pressable
-            onPress={handleOnNotificationReset}
-            style={({ pressed }) => [
-              styles.item,
-              { backgroundColor: pressed ? "#f0f0f0" : "transparent" },
-            ]}
-            accessibilityLabel={t("reset_notifications_label")}
-          >
-            <Icon name="notifications-none" size={24} color={themeProperties.textColor} style={styles.icon} />
-            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
-              {t("notifications_reset")}
-            </Text>
-          </Pressable>
+        <Text style={[styles.sectionHeader, { color: themeProperties.textColor }]}>
+          {t("accessibility")}
+        </Text>
 
-          <Pressable
-            onPress={() => handleNavigation(DEFAULTS.POLICY_URL)}
-            style={styles.item}
-            accessibilityLabel={t("privacy_policy")}
-          >
-            <Icon name="privacy-tip" size={24} color={themeProperties.textColor} style={styles.icon} />
-            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
-              {t("privacy_policy")}
-            </Text>
+        <Pressable style={styles.item}>
+          <Icon name="format-size" size={24} color={themeProperties.textColor} style={styles.icon} />
+          <Text style={[styles.itemText, { color: themeProperties.textColor }]}>{t("increase_text_size")}</Text>
+          <Pressable onPress={() => { }}>
+            <Icon name="arrow-forward" size={24} color={iconColor} />
           </Pressable>
+        </Pressable>
 
-          <Pressable
-            onPress={() => handleNavigation(DEFAULTS.TERM_AND_CONDITION)}
-            style={styles.item}
-            accessibilityLabel={t("terms_and_conditions")}
-          >
-            <Icon name="lock-outline" size={24} color={themeProperties.textColor} style={styles.icon} />
-            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
-              {t("term_and_condition")}
-            </Text>
-          </Pressable>
+        <Pressable style={styles.item}
+          onPress={() => navigation.navigate(NAVIGATION.CHANGE_LANGUAGE)}>
+          <Icon name="language" size={24}
+            color={themeProperties.textColor} style={styles.icon} />
+          <Text style={[styles.itemText, { color: themeProperties.textColor }]}>{t("language")}</Text>
 
-          <Pressable
-            onPress={toggleTheme} // Toggle theme dynamically
-            style={styles.item}
-            accessibilityLabel={t("theme_change")}
-          >
-            <Icon name={theme === "dark" ? "light-mode" : "dark-mode"} size={24} color={themeProperties.textColor} style={styles.icon} />
-            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
-              {theme === "light" ? t("dark_mode") : t("light_mode")}
-            </Text>
-          </Pressable>
+          {/* <Text style={styles.itemSubText}>{language}</Text> */}
 
-          <Pressable
-            onPress={() => navigation.navigate(NAVIGATION.CHANGE_LANGUAGE)}
-            style={styles.item}
-            accessibilityLabel={t("language_change")}
-          >
-            <Icon name="language" size={24} color={themeProperties.textColor} style={styles.icon} />
-            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
-              {t("language_change")}
-            </Text>
-          </Pressable>
+        </Pressable>
 
-          <Pressable
-            onPress={() => navigation.navigate(NAVIGATION.CHANGE_PASSWORD)}
-            style={styles.item}
-            accessibilityLabel={t("change_password")}
-          >
-            <Icon name="password" size={24} color={themeProperties.textColor} style={styles.icon} />
-            <Text style={[globalStyles.textPrimary, { color: themeProperties.textColor }]}>
-              {t("change_password")}
-            </Text>
-          </Pressable>
+        <Pressable style={styles.item} onPress={handleOnNotificationReset}>
+          <Icon name="notifications-none" size={24} color={themeProperties.textColor} style={styles.icon} />
+          <Text style={[styles.itemText, { color: themeProperties.textColor }]}>
+            {t("notifications_reset")}
+          </Text>
+        </Pressable>
 
-          <Pressable
-            onPress={showAlert}
-            style={[styles.item, styles.logoutItem]}
-            accessibilityLabel={t("logout")}
-          >
-            <Icon name="logout" size={24} color="red" style={styles.icon} />
-            <Text style={[globalStyles.errorText, styles.logoutText]}>{t("logout")}</Text>
-          </Pressable>
-        </View>
+        <Text style={[styles.sectionHeader, { color: themeProperties.textColor }]}>{t("dark_mode")}</Text>
+        <Pressable style={styles.item}
+          onPress={() => navigation.navigate(NAVIGATION.MODE_STATUS)}>
+          <Icon name={theme === "dark" ? "light-mode" : "dark-mode"} size={24}
+            color={themeProperties.textColor} style={styles.icon} />
+          <Text style={[styles.itemText, { color: themeProperties.textColor }]}>{t("auto_dark_mode")}</Text>
+          <Text style={styles.itemSubText}>{themeStatus ? t("follow_os_setting") : t("off")}</Text>
+        </Pressable>
+
+        <Pressable style={[styles.item, {
+
+        }]} onPress={handleThemeChange}>
+          <Icon name="brightness-4" size={24} color={!themeStatus ? themeProperties.textColor : "lightgray"} style={styles.icon} />
+          <Text style={[styles.itemText, { color: !themeStatus ? themeProperties.textColor : "lightgray" }]}>{t("dark_mode")}</Text>
+          <Switch value={theme === "dark"} onValueChange={handleThemeChange} />
+        </Pressable>
+
+        <Text style={[styles.sectionHeader, { color: themeProperties.textColor }]}>{t("about")}</Text>
+        <Pressable onPress={() => handleNavigation(DEFAULTS.POLICY_URL)} style={styles.item}>
+          <Icon name="privacy-tip" size={24} color={themeProperties.textColor} style={styles.icon} />
+          <Text style={[styles.itemText, { color: themeProperties.textColor }]}>{t("privacy_policy")}</Text>
+        </Pressable>
+
+        <Pressable style={styles.item} onPress={() => handleNavigation(DEFAULTS.TERM_AND_CONDITION)}>
+          <Icon name="description" size={24} color={themeProperties.textColor} style={styles.icon} />
+          <Text style={[styles.itemText, { color: themeProperties.textColor }]}>{t("terms_conditions")}</Text>
+        </Pressable>
+
+        <Pressable style={styles.item} onPress={showAlert}>
+          <Icon name="logout" size={24} color="red" style={styles.icon} />
+          <Text style={[styles.itemText, { color: "red" }]}>{t("logout")}</Text>
+        </Pressable>
+
+
       </ScrollView>
+
 
       {/* Custom Alert */}
       <CustomAlert
@@ -174,23 +178,29 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingHorizontal: 16,
   },
-  section: {
-    flex: 1,
-    marginHorizontal: 8,
+
+  sectionHeader: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginTop: 20,
+    marginBottom: 10,
   },
   item: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 12,
+    justifyContent: "space-between",
   },
   icon: {
     marginRight: 15,
   },
-  logoutItem: {},
-  logoutText: {
-    color: "red",
+  itemText: {
+    flex: 1,
     fontSize: 16,
-    fontWeight: "600",
+  },
+  itemSubText: {
+    color: "gray",
+    fontSize: 14,
   },
 });
 

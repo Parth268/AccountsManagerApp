@@ -10,6 +10,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import i18n from './src/locales/i18n';
 import firebase from '@react-native-firebase/app'; // Import Firebase
 import 'firebase/database';
+import { LanguageProvider } from './src/storage/context/LanguageContext';
 
 type ErrorFallbackProps = {
   error: Error;
@@ -43,7 +44,7 @@ const App = () => {
           messagingSenderId: '498251559925',
           appId: '1:498251559925:android:328c725703a114db3966bc',
         });
-      
+
       } else {
         // If Firebase is already initialized, use the default app
         firebase.app();
@@ -79,15 +80,17 @@ const App = () => {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <I18nextProvider i18n={i18n}>
-        <ThemeProvider>
-          <AppProvider>
-            <AuthProvider>
-              <SafeAreaView style={styles.container}>
-                <MainNavigator />
-              </SafeAreaView>
-            </AuthProvider>
-          </AppProvider>
-        </ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            <AppProvider>
+              <AuthProvider>
+                <SafeAreaView style={styles.container}>
+                  <MainNavigator />
+                </SafeAreaView>
+              </AuthProvider>
+            </AppProvider>
+          </ThemeProvider>
+        </LanguageProvider>
       </I18nextProvider>
     </ErrorBoundary>
   );

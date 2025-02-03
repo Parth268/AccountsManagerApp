@@ -11,6 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DEFAULTS, NAVIGATION } from "../../utils/constants"; // Assuming you have a constants file for default values
 import { useTranslation } from "react-i18next";
 import { NavigationProp } from "@react-navigation/native"; // Import NavigationProp for type safety
+import { useLanguage } from "../../storage/context/LanguageContext";
 
 // Define the type for a language object
 interface Language {
@@ -30,7 +31,7 @@ interface LanguageSelectionScreenProps {
 const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ navigation }) => {
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { t, i18n } = useTranslation();
+  const { changeLanguage } = useLanguage();
 
   // List of languages to display
   const languages: Language[] = [
@@ -74,16 +75,14 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ navig
   // Save the selected language to AsyncStorage and navigate to the Login screen
   const handleLanguageSelect = async (language: Language) => {
     try {
-      if (i18n && typeof i18n.changeLanguage === 'function') {
-        console.log(language?.code)
-        await i18n.changeLanguage(language.code);
-        await AsyncStorage.setItem(DEFAULTS.LANGUAGE, JSON.stringify(language));
-        await AsyncStorage.setItem(DEFAULTS.IS_OPEN_FIRST_TIME, "true");
-        setSelectedLanguage(language);
-        console.log('Language saved successfully!');
-      } else {
-        console.error('i18n is not initialized or changeLanguage is not a function.');
-      }
+
+      console.log(language?.code)
+      await changeLanguage(language.code);
+      await AsyncStorage.setItem(DEFAULTS.LANGUAGE, JSON.stringify(language));
+      await AsyncStorage.setItem(DEFAULTS.IS_OPEN_FIRST_TIME, "true");
+      setSelectedLanguage(language);
+      console.log('Language saved successfully!');
+
       // After saving the language, navigate to the Login screen
       navigation.navigate(NAVIGATION.LOGIN); // Ensure "Login" screen is registered in your navigation stack
     } catch (error) {
