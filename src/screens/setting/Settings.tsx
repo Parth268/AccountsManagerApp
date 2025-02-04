@@ -93,12 +93,13 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
           {t("accessibility")}
         </Text>
 
-        <Pressable style={styles.item}>
+        <Pressable style={styles.item}
+                  onPress={() => navigation.navigate(NAVIGATION.CHANGE_TEXT_SIZE)}>
           <Icon name="format-size" size={24} color={themeProperties.textColor} style={styles.icon} />
           <Text style={[styles.itemText, { color: themeProperties.textColor }]}>{t("increase_text_size")}</Text>
-          <Pressable onPress={() => { }}>
+          <>
             <Icon name="arrow-forward" size={24} color={iconColor} />
-          </Pressable>
+          </>
         </Pressable>
 
         <Pressable style={styles.item}

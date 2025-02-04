@@ -11,6 +11,7 @@ import CustomerList from "../screens/customer/CustomerList";
 import AddEditCustomer from '../screens/customer/AddEditCustomer';
 import SupplierList from "../screens/supplier/SupplierList";
 import ModeStatus from "../screens/setting/ModeStatus";
+import IncreaseTextSize from "../screens/setting/IncreaseTextSize";
 
 type RootStackParamList = {
   [NAVIGATION.DASHBOARD]: undefined;
@@ -23,6 +24,7 @@ type RootStackParamList = {
   [NAVIGATION.CHANGE_THEME]: undefined;
   [NAVIGATION.CHANGE_LANGUAGE]: undefined;
   [NAVIGATION.MODE_STATUS]: undefined;
+  [NAVIGATION.CHANGE_TEXT_SIZE]:undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -38,6 +40,11 @@ const AppStack = () => {
       <Stack.Screen 
         name={NAVIGATION.SETTING} 
         component={Settings} 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
+        name={NAVIGATION.CHANGE_TEXT_SIZE} 
+        component={IncreaseTextSize} 
         options={{ headerShown: false }} 
       />
        <Stack.Screen 

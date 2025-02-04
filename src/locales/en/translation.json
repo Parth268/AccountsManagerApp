@@ -81,6 +81,7 @@
   "accessibility": "ACCESSIBILITY",
   "language": "Language",
   "increase_text_size": "Increase text size",
+  "increase_text_size_A":"Increase Text Size",
   "use_device_language": "Use device language",
   "auto_dark_mode": "Auto Dark Mode",
   "follow_os_setting": "Follow OS setting",
@@ -89,5 +90,10 @@
   "mode": "Auto Dark Mode",
   "off": "Off",
   "follow_on_setting": "Follow OS setting",
-  "auto_dark_mode_on": "Auto dark mode on"
+  "auto_dark_mode_on": "Auto dark mode on",
+  "overrideSettingsTitle": "Override device settings",
+  "overrideSettingsSubtitle": "Adjust the text size in the app without affecting the rest of your device",
+  "textLabel": "A",
+  "increaseText": "Increase",
+  "decreaseText": "Decrease"
 }
