@@ -5,17 +5,16 @@ import {
   FlatList,
   StyleSheet,
   RefreshControl,
-  ActivityIndicator,
-  TouchableOpacity,
   Pressable,
 } from "react-native";
 import { useAppTheme } from "../../storage/context/ThemeContext";
 import { useTranslation } from "react-i18next";
-import database from '@react-native-firebase/database';
 import CustomAlertUser from "../../components/CustomAlertUser";
+import { NAVIGATION } from "../../utils/constants";
 
 interface Transaction {
   id: string;
+  userId: string;
   phoneNumber: string;
   type: 'receive' | 'send';
   amount: number;
@@ -29,14 +28,40 @@ interface Transaction {
 
 interface Props {
   transation: Transaction[];
+  navigation: any;
 }
 
-const CustomerList: React.FC<Props>  = ({ transation }: Props) => {
+interface Customer {
+  userId: string;
+  name: string;
+  type: string;
+  phoneNumber: string;
+  email: string;
+}
+
+const CustomerList: React.FC<Props> = ({ transation, navigation }: Props) => {
   const { t } = useTranslation();
   const { theme, themeProperties } = useAppTheme();
   const [customersTransation, setCustomersTransation] = useState<Transaction[]>(transation);
   const [refreshing, setRefreshing] = useState(false);
+  const [customer, setCustomer] = useState<Customer[]>()
   const [alertVisible, setAlertVisible] = useState(false);
+
+  useEffect(() => {
+    fetchCustomerData()
+  }, [])
+
+  const fetchCustomerData = () => {
+    setCustomer([
+      {
+        userId: "2d4f5gt",
+        name: "John Doe",
+        type: "customer",
+        phoneNumber: "123-456-7890",  
+        email: "johndoe@example.com",
+      }
+    ])
+  }
 
   const closeAlert = () => {
     setAlertVisible(false);
@@ -55,9 +80,6 @@ const CustomerList: React.FC<Props>  = ({ transation }: Props) => {
     setRefreshing(false);
   }, []);
 
-  const handlePress = () => {
-
-  }
 
   const handleCall = () => {
     setAlertVisible(!alertVisible)
@@ -75,11 +97,19 @@ const CustomerList: React.FC<Props>  = ({ transation }: Props) => {
       day: 'numeric',
     });
 
+    // const customerData
+    const customerData = customer?.find(c => c.userId === item?.userId);
+
+
     const isDarkMode = theme === 'dark';
+
+    const handleOnPressItem = () => {
+      navigation.navigate(NAVIGATION.CUSTOMER_TRANSACTION_SCREEN, { transction_1: item, customerData: customerData })
+    }
 
     return (
       item?.userType === 'customer' && (
-        <View style={[styles.customerCard, { backgroundColor: isDarkMode ? '#333' : '#ffffff' }]}>
+        <Pressable onPress={() => { handleOnPressItem() }} style={[styles.customerCard, { backgroundColor: isDarkMode ? '#333' : '#ffffff' }]}>
           <View style={styles.imageContainer}>
             <Text style={styles.initialText}>{item?.name.charAt(0).toUpperCase()}</Text>
           </View>
@@ -88,8 +118,8 @@ const CustomerList: React.FC<Props>  = ({ transation }: Props) => {
             <Text style={[styles.customerName, { color: isDarkMode ? '#fff' : '#333' }]}>{item?.name}</Text>
 
             <View style={styles.customerDetails}>
-              <Pressable onPress={handleCall} style={styles.detailItem}>
-                <Text style={[styles.icon, { color: isDarkMode ? '#00bfff' : '#007bff' }]}>📞</Text>
+              <Pressable style={styles.detailItem}>
+                <Pressable onPress={handleCall}><Text style={[styles.icon, { color: isDarkMode ? '#00bfff' : '#007bff' }]}>📞</Text></Pressable>
                 <Text style={[styles.customerPhone, { color: isDarkMode ? '#bbb' : '#666' }]}>{item?.phoneNumber}</Text>
               </Pressable>
             </View>
@@ -102,9 +132,9 @@ const CustomerList: React.FC<Props>  = ({ transation }: Props) => {
             }]} >
               {
                 item?.type === 'send' ? (
-                  <Text style={styles.sendMoneyText}>{item?.amount}</Text>
+                  <Text style={styles.sendMoneyText}>Debit: {item?.amount}</Text>
                 ) : (
-                  <Text style={styles.sendMoneyText}>{item?.amount}</Text>
+                  <Text style={styles.sendMoneyText}>Credit: {item?.amount}</Text>
                 )
               }
             </View>
@@ -114,7 +144,7 @@ const CustomerList: React.FC<Props>  = ({ transation }: Props) => {
               <Text style={[styles.timestampText, { color: isDarkMode ? '#bbb' : '#777' }]}>{formattedTimestamp}</Text>
             </View>
           </View>
-        </View>
+        </Pressable>
       ) || null // Returns null if userType is not 'customer'
     );
   };
@@ -226,7 +256,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   sendMoneyText: {
-    fontSize: 12,
+    fontSize: 11,
     color: 'white',
   },
   timestampContainer: {

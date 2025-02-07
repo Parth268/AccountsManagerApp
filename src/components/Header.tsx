@@ -62,7 +62,7 @@ const Header = ({
 
                 {/* Title */}
                 <Text style={{
-                    fontSize: 24,
+                    fontSize: 22,
                     fontWeight: 'bold',
                     color: theme === 'light' ? '#333' : '#fff',
                 }}>{name}</Text>

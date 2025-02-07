@@ -12,6 +12,7 @@ import AddEditCustomer from '../screens/customer/AddEditCustomer';
 import SupplierList from "../screens/supplier/SupplierList";
 import ModeStatus from "../screens/setting/ModeStatus";
 import IncreaseTextSize from "../screens/setting/IncreaseTextSize";
+import CustomerTransactionScreen from "../screens/customer/CustomerTransactionScreen";
 
 type RootStackParamList = {
   [NAVIGATION.DASHBOARD]: undefined;
@@ -24,7 +25,8 @@ type RootStackParamList = {
   [NAVIGATION.CHANGE_THEME]: undefined;
   [NAVIGATION.CHANGE_LANGUAGE]: undefined;
   [NAVIGATION.MODE_STATUS]: undefined;
-  [NAVIGATION.CHANGE_TEXT_SIZE]:undefined;
+  [NAVIGATION.CHANGE_TEXT_SIZE]: undefined;
+  [NAVIGATION.CUSTOMER_TRANSACTION_SCREEN]: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -32,60 +34,65 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const AppStack = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen 
-        name={NAVIGATION.DASHBOARD} 
-        component={DashBoard} 
-        options={{ headerShown: false }} 
+      <Stack.Screen
+        name={NAVIGATION.DASHBOARD}
+        component={DashBoard}
+        options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name={NAVIGATION.SETTING} 
-        component={Settings} 
-        options={{ headerShown: false }} 
+      <Stack.Screen
+        name={NAVIGATION.SETTING}
+        component={Settings}
+        options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name={NAVIGATION.CHANGE_TEXT_SIZE} 
-        component={IncreaseTextSize} 
-        options={{ headerShown: false }} 
+      <Stack.Screen
+        name={NAVIGATION.CUSTOMER_TRANSACTION_SCREEN}
+        component={CustomerTransactionScreen}
+        options={{ headerShown: false }}
       />
-       <Stack.Screen 
-        name={NAVIGATION.MODE_STATUS} 
-        component={ModeStatus} 
-        options={{ headerShown: false }} 
+      <Stack.Screen
+        name={NAVIGATION.CHANGE_TEXT_SIZE}
+        component={IncreaseTextSize}
+        options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name={NAVIGATION.CUSTOMER_LIST} 
+      <Stack.Screen
+        name={NAVIGATION.MODE_STATUS}
+        component={ModeStatus}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={NAVIGATION.CUSTOMER_LIST}
         component={CustomerList}
-        options={{ headerShown: false }} 
+        options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name={NAVIGATION.SUPPLIER_LIST} 
+      <Stack.Screen
+        name={NAVIGATION.SUPPLIER_LIST}
         component={SupplierList}
-        options={{ headerShown: false }} 
+        options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name={NAVIGATION.ADD_EDIT_CUSTOMER} 
-        component={AddEditCustomer} 
-        options={{ headerShown: false }} 
+      <Stack.Screen
+        name={NAVIGATION.ADD_EDIT_CUSTOMER}
+        component={AddEditCustomer}
+        options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name={NAVIGATION.WEBVIEW} 
+      <Stack.Screen
+        name={NAVIGATION.WEBVIEW}
         component={WebViewScreen}
-        options={{ headerShown: false }} 
+        options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name={NAVIGATION.CHANGE_PASSWORD} 
-        component={ChangePassword} 
-        options={{ headerShown: false }} 
+      <Stack.Screen
+        name={NAVIGATION.CHANGE_PASSWORD}
+        component={ChangePassword}
+        options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name={NAVIGATION.CHANGE_THEME} 
-        component={ChangeThemeScreen} 
-        options={{ headerShown: false }} 
+      <Stack.Screen
+        name={NAVIGATION.CHANGE_THEME}
+        component={ChangeThemeScreen}
+        options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name={NAVIGATION.CHANGE_LANGUAGE} 
-        component={ChangeLanguage} 
-        options={{ headerShown: false }} 
+      <Stack.Screen
+        name={NAVIGATION.CHANGE_LANGUAGE}
+        component={ChangeLanguage}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

@@ -38,6 +38,7 @@ interface Transaction {
   timestamp: string;
   userType: "customer" | "supplier";
   transationId: string;
+  userId: string;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
@@ -47,7 +48,21 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
   const [isRefreshing, setRefreshing] = useState(false);
-  const [transation, setTransation] = useState<Transaction[]>(transcationData);
+  const [transation, setTransation] = useState<Transaction[]>([
+    {
+      "id": "6",
+      "userId": "2d4f5gt",
+      "phoneNumber": "9876543211",
+      "type": "send",
+      "amount": 3500,
+      "name": "Sara Lee",
+      "imageurl": "https://img.freepik.com/free-vector/minimal-invoice-template-vector-design_1017-12658.jpg",
+      "email": "saralee@example.com",
+      "timestamp": "2025-01-30T15:00:00Z",
+      "transationId": "T1006",
+      "userType": "customer",
+    }
+  ]);
 
   const [isAlertVisible, setAlertVisible] = useState(false);
   const { theme } = useAppTheme();
@@ -82,7 +97,6 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
     outputRange: [0, width / 2],
   });
 
-  const showAlert = () => setAlertVisible(true);
   const hideAlert = () => setAlertVisible(false);
 
   const triggerSnackbar = (message: string) => {
@@ -91,7 +105,11 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
   };
 
   const handlePress = () => {
-
+    if (activeTab === "supplier") {
+      navigation.navigate(NAVIGATION.ADD_EDIT_SUPPLIER);
+    } else {
+      navigation.navigate(NAVIGATION.ADD_EDIT_CUSTOMER);
+    }
   }
 
   const logout = () => {
@@ -119,7 +137,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
 
       <View style={styles.headercontainer}>
         <View>
-          <Text style={styles.businessName}>{"Business"}</Text>
+          <Text style={styles.businessName}>{t('business')}</Text>
           {phoneNumber && <Text style={styles.ownerName}>{phoneNumber}</Text>}
         </View>
 
@@ -181,7 +199,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           return activeTab === "customer" && item.userType === "customer" ? (
-            <CustomerList transation={[item]} />
+            <CustomerList transation={[item]} navigation={navigation} />
           ) : activeTab === "supplier" && item.userType === "supplier" ? (
             <SupplierList transation={[item]} />
           ) : null;
