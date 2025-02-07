@@ -47,6 +47,7 @@ const CustomerList: React.FC<Props> = ({ transation, navigation }: Props) => {
   const [customer, setCustomer] = useState<Customer[]>()
   const [alertVisible, setAlertVisible] = useState(false);
 
+
   useEffect(() => {
     fetchCustomerData()
   }, [])
@@ -76,7 +77,7 @@ const CustomerList: React.FC<Props> = ({ transation, navigation }: Props) => {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     // Simulate fetch action (replace with your data fetch logic)
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    fetchCustomerData()
     setRefreshing(false);
   }, []);
 

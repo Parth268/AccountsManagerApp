@@ -112,7 +112,7 @@
   "transcation_screen": "Transcation",
   "transcation_list": "Transcation List",
   "change_transcation_detail": "Change Transaction Details",
-  "change_customer_detail":"Change Customer Detail",
+  "change_customer_detail": "Change Customer Detail",
   "business": "Business",
   "edit_profile": "Edit Profile",
   "enter_amount": "Enter Amount",
@@ -123,6 +123,13 @@
   "settement": "Settlement Amount",
   "report": "Report",
   "sms": "SMS",
-  "amt":"Amount",
-  "bal":"Bal."
+  "amt": "Amount",
+  "bal": "Bal.",
+  "customer_name": "Customer Name",
+  "customer_email": "Customer Email (optional)",
+  "customer_phone": "Customer Phone",
+  "customer_address": "Customer Address (optional)",
+  "please_fill_name_phone":"Please Fill Name and Phone Number",
+  "debit":"Debit",
+  "credit":"Credit"
 }

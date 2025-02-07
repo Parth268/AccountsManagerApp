@@ -15,8 +15,8 @@ import database from "@react-native-firebase/database";
 import Header from "../../components/Header";
 import { Snackbar } from "../../components/Snackbar";
 
-interface AddEditCustomerProps {
-  customer?: {
+interface AddEditSupplierProps {
+  supplier?: {
     uid: string;
     name: string;
     email: string;
@@ -27,7 +27,7 @@ interface AddEditCustomerProps {
   navigation: any;
 }
 
-const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ navigation }) => {
+const AddEditSupplier: React.FC<AddEditSupplierProps> = ({ navigation }) => {
   const { t } = useTranslation();
   const { themeProperties } = useAppTheme();
 
@@ -69,16 +69,16 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ navigation }) => {
 
 
     setLoading(true);
-    const customerData = { name, email, phoneNumber, address };
+    const supplierData = { name, email, phoneNumber, address };
 
     try {
 
-      const newCustomerRef = database().ref("customers").push();
-      await newCustomerRef.set(customerData);
-      Alert.alert(t("customer_added_successfully"));
+      const newSupplierRef = database().ref("suppliers").push();
+      await newSupplierRef.set(supplierData);
+      Alert.alert(t("supplier_added_successfully"));
       navigation.goBack();
     } catch (error) {
-      console.error("Failed to save customer:", error);
+      console.error("Failed to save supplier:", error);
       Alert.alert(t("something_went_wrong"));
     } finally {
       setLoading(false);
@@ -89,7 +89,7 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ navigation }) => {
     <View style={[styles.container, { backgroundColor: themeProperties.backgroundColor }]}>
       <Header
         navigation={navigation}
-        name={t("add_customer")}
+        name={t("add_supplier")}
         isHome={false}
         onBack={() => { }}
         rightIcon={<></>}
@@ -97,10 +97,10 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ navigation }) => {
       />
       <View style={{ padding: 16, flex: 1 }}>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("customer_phone")}</Text>
+          <Text style={styles.label}>{t("supplier_phone")}</Text>
           <TextInput
             style={styles.input}
-            placeholder={t("enter_customer_phone")}
+            placeholder={t("enter_supplier_phone")}
             value={phoneNumber}
             onChangeText={handlePhoneChange}
             keyboardType="phone-pad"
@@ -109,20 +109,20 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ navigation }) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("customer_name")}</Text>
-          <TextInput style={styles.input} placeholder={t("enter_customer_name")} value={name} onChangeText={setName} />
+          <Text style={styles.label}>{t("supplier_name")}</Text>
+          <TextInput style={styles.input} placeholder={t("enter_supplier_name")} value={name} onChangeText={setName} />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("customer_email")}</Text>
-          <TextInput style={styles.input} placeholder={t("enter_customer_email")} value={email} onChangeText={setEmail} />
+          <Text style={styles.label}>{t("supplier_email")}</Text>
+          <TextInput style={styles.input} placeholder={t("enter_supplier_email")} value={email} onChangeText={setEmail} />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("customer_address")}</Text>
+          <Text style={styles.label}>{t("supplier_address")}</Text>
           <TextInput
             style={[styles.input, styles.addressInput]}
-            placeholder={t("enter_customer_address")}
+            placeholder={t("enter_supplier_address")}
             value={address}
             onChangeText={setAddress}
             multiline
@@ -132,7 +132,7 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ navigation }) => {
 
 
         <TouchableOpacity style={[styles.button, loading && styles.buttonDisabled]} onPress={handleSubmit} disabled={loading}>
-          <Text style={styles.buttonText}>{loading ? t("loading") : t("add_customer")}</Text>
+          <Text style={styles.buttonText}>{loading ? t("loading") : t("add_supplier")}</Text>
         </TouchableOpacity>
       </View>
       {loading && <ActivityIndicator size={"large"} />}
@@ -181,4 +181,4 @@ const styles = StyleSheet.create({
   buttonText: { fontSize: 18, color: "#fff" },
 });
 
-export default AddEditCustomer;
+export default AddEditSupplier;

@@ -19,8 +19,7 @@ import CustomAlert from "../../components/CustomAlert";
 import { Snackbar } from "../../components/Snackbar";
 import HorizontalLine from "../../components/HorizontalLine";
 import CustomerList from "../customer/CustomerList";
-import SupplierList from "../supplier/SupplierList";
-import transcationData from '../../../data/transcationData.json'
+import Supplier from "../supplier/Supplier";
 const { width } = Dimensions.get("window");
 
 interface DashboardProps {
@@ -61,6 +60,19 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
       "timestamp": "2025-01-30T15:00:00Z",
       "transationId": "T1006",
       "userType": "customer",
+    },
+    {
+      "id": "6",
+      "userId": "2d4f5gt",
+      "phoneNumber": "9876543211",
+      "type": "send",
+      "amount": 3500,
+      "name": "Sara Lee",
+      "imageurl": "https://img.freepik.com/free-vector/minimal-invoice-template-vector-design_1017-12658.jpg",
+      "email": "saralee@example.com",
+      "timestamp": "2025-01-30T15:00:00Z",
+      "transationId": "T1006",
+      "userType": "supplier",
     }
   ]);
 
@@ -201,7 +213,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
           return activeTab === "customer" && item.userType === "customer" ? (
             <CustomerList transation={[item]} navigation={navigation} />
           ) : activeTab === "supplier" && item.userType === "supplier" ? (
-            <SupplierList transation={[item]} />
+            <Supplier transation={[item]}  navigation={navigation} />
           ) : null;
         }}
         refreshControl={

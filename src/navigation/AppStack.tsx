@@ -9,10 +9,12 @@ import ChangeThemeScreen from "../screens/setting/ChangeTheme";
 import ChangePassword from "../screens/setting/ChangePassword";
 import CustomerList from "../screens/customer/CustomerList";
 import AddEditCustomer from '../screens/customer/AddEditCustomer';
-import SupplierList from "../screens/supplier/SupplierList";
+import Supplier from "../screens/supplier/Supplier";
 import ModeStatus from "../screens/setting/ModeStatus";
 import IncreaseTextSize from "../screens/setting/IncreaseTextSize";
 import CustomerTransactionScreen from "../screens/customer/CustomerTransactionScreen";
+import AddEditSupplier from "../screens/supplier/AddEditSupplier";
+import SupplierTransactionScreen from "../screens/supplier/SupplierTransactionScreen";
 
 type RootStackParamList = {
   [NAVIGATION.DASHBOARD]: undefined;
@@ -20,6 +22,7 @@ type RootStackParamList = {
   [NAVIGATION.CUSTOMER_LIST]: undefined;
   [NAVIGATION.SUPPLIER_LIST]: undefined;
   [NAVIGATION.ADD_EDIT_CUSTOMER]: undefined;
+  [NAVIGATION.ADD_EDIT_SUPPLIER]: undefined;
   [NAVIGATION.WEBVIEW]: undefined;
   [NAVIGATION.CHANGE_PASSWORD]: undefined;
   [NAVIGATION.CHANGE_THEME]: undefined;
@@ -27,6 +30,7 @@ type RootStackParamList = {
   [NAVIGATION.MODE_STATUS]: undefined;
   [NAVIGATION.CHANGE_TEXT_SIZE]: undefined;
   [NAVIGATION.CUSTOMER_TRANSACTION_SCREEN]: undefined;
+  [NAVIGATION.SUPPLIER_TRANSACTION_SCREEN]: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -50,6 +54,11 @@ const AppStack = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name={NAVIGATION.SUPPLIER_TRANSACTION_SCREEN}
+        component={SupplierTransactionScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name={NAVIGATION.CHANGE_TEXT_SIZE}
         component={IncreaseTextSize}
         options={{ headerShown: false }}
@@ -66,12 +75,17 @@ const AppStack = () => {
       />
       <Stack.Screen
         name={NAVIGATION.SUPPLIER_LIST}
-        component={SupplierList}
+        component={Supplier}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={NAVIGATION.ADD_EDIT_CUSTOMER}
         component={AddEditCustomer}
+        options={{ headerShown: false }}
+      />
+        <Stack.Screen
+        name={NAVIGATION.ADD_EDIT_SUPPLIER}
+        component={AddEditSupplier}
         options={{ headerShown: false }}
       />
       <Stack.Screen
