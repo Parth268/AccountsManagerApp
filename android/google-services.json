@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "498251559925",
+    "firebase_url": "https://account-manager-6e9e0-default-rtdb.firebaseio.com",
     "project_id": "account-manager-6e9e0",
     "storage_bucket": "account-manager-6e9e0.firebasestorage.app"
   },

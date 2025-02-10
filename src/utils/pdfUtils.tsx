@@ -11,11 +11,16 @@ import { Alert } from 'react-native';
 
 interface TransactionEntry {
     id: string;
-    date: string;
-    time: string;
+    userId: string;
+    phoneNumber: string;
+    type: 'receive' | 'send';
     amount: number;
-    balance: number;
-    type: 'gave' | 'got'; // 'gave' = red, 'got' = green
+    name: string;
+    imageurl: string;
+    email: string;
+    timestamp: string;
+    userType: 'customer' | 'supplier';
+    transationId: string;
 }
 
 interface Customer {
@@ -36,8 +41,8 @@ export const generateAndSharePDF = async (fileName: string, settlementAmount: nu
             <tr>
                 <td>${transaction.id}</td>
                 <td>${customer.name}</td>
-                <td>${transaction.time}</td>
-                <td>${transaction.type === 'gave' ? 'Sent' : 'Received'}</td>
+                <td>${transaction.timestamp}</td>
+                <td>${transaction.type === 'send' ? 'Sent' : 'Received'}</td>
                 <td>$${transaction.amount}</td>
             </tr>
         `)

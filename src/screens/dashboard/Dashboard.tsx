@@ -21,6 +21,9 @@ import HorizontalLine from "../../components/HorizontalLine";
 import CustomerList from "../customer/CustomerList";
 import Supplier from "../supplier/Supplier";
 const { width } = Dimensions.get("window");
+import database from "@react-native-firebase/database";
+import auth from "@react-native-firebase/auth";
+import { useFocusEffect } from '@react-navigation/native';
 
 interface DashboardProps {
   navigation: any;
@@ -28,16 +31,32 @@ interface DashboardProps {
 
 interface Transaction {
   id: string;
+  userId: string;
   phoneNumber: string;
-  type: "receive" | "send";
+  type: 'receive' | 'send';
   amount: number;
   name: string;
   imageurl: string;
   email: string;
   timestamp: string;
-  userType: "customer" | "supplier";
+  userType: 'customer' | 'supplier';
   transationId: string;
+}
+
+
+interface User {
+  id: string;
+  phoneNumber: string;
+  type: "receive" | "send";
+  amount: number;
+  name: string;
+  email: string;
+  timestamp: string;
+  userType: "customer" | "supplier";
+  createdAt: string;
+  updatedAt: string;
   userId: string;
+  transactions: Transaction[]; // Properly typed array of transactions
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
@@ -45,45 +64,76 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
   const { themeProperties } = useAppTheme();
   const [activeTab, setActiveTab] = useState<string>("customer");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [business, setBusiness] = useState("ABC")
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
   const [isRefreshing, setRefreshing] = useState(false);
-  const [transation, setTransation] = useState<Transaction[]>([
-    {
-      "id": "6",
-      "userId": "2d4f5gt",
-      "phoneNumber": "9876543211",
-      "type": "send",
-      "amount": 3500,
-      "name": "Sara Lee",
-      "imageurl": "https://img.freepik.com/free-vector/minimal-invoice-template-vector-design_1017-12658.jpg",
-      "email": "saralee@example.com",
-      "timestamp": "2025-01-30T15:00:00Z",
-      "transationId": "T1006",
-      "userType": "customer",
-    },
-    {
-      "id": "6",
-      "userId": "2d4f5gt",
-      "phoneNumber": "9876543211",
-      "type": "send",
-      "amount": 3500,
-      "name": "Sara Lee",
-      "imageurl": "https://img.freepik.com/free-vector/minimal-invoice-template-vector-design_1017-12658.jpg",
-      "email": "saralee@example.com",
-      "timestamp": "2025-01-30T15:00:00Z",
-      "transationId": "T1006",
-      "userType": "supplier",
-    }
-  ]);
+  const [userData, setUserData] = useState<User[]>([]);
 
   const [isAlertVisible, setAlertVisible] = useState(false);
   const { theme } = useAppTheme();
 
   const tabIndicator = new Animated.Value(activeTab === "customer" ? 0 : 1);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     fetchPhoneNumber();
-  }, []);
+    fetchList().then((data) => {
+      setUserData(data);
+    });
+  }, []); // Ensures fetchData remains stable
+
+  useFocusEffect(fetchData); // Runs on screen focus
+
+  useEffect(() => {
+    fetchData(); // Runs on component mount
+  }, [fetchData]);
+
+
+
+
+  const fetchList = async (): Promise<User[]> => {
+    try {
+      const user = auth().currentUser;
+      if (!user) {
+        console.log("User not authenticated");
+        return [];
+      }
+
+      const userId = user.uid;
+
+      const userRef = database().ref(userId);
+
+      const snapshot = await userRef.once("value");
+
+      if (!snapshot.exists()) {
+        console.log("No data available");
+        return [];
+      }
+
+      const rawData: Record<string, any> = snapshot.val();
+
+      const users: User[] = Object.entries(rawData).map(([key, value]) => ({
+        id: value.id ?? "",
+        phoneNumber: value.phoneNumber ?? "",
+        type: value.type === "receive" || value.type === "send" ? value.type : "receive", // Defaulting
+        amount: Number(value.amount) || 0,
+        name: value.name ?? "",
+        email: value.email ?? "",
+        timestamp: new Date(value.createdAt).toISOString(), // Convert timestamp
+        userType: value.userType === "customer" || value.userType === "supplier" ? value.userType : "customer", // Defaulting
+        createdAt: new Date(value.createdAt).toISOString(),
+        updatedAt: new Date(value.updatedAt).toISOString(),
+        userId: key, // Firebase key as userId
+        transactions: [], // Assume fetching transactions separately
+      }));
+
+      return users;
+    } catch (error) {
+      console.error("Error fetching list:", (error as Error).message);
+      return [];
+    }
+  };
+
+
 
   const fetchPhoneNumber = async () => {
     try {
@@ -120,7 +170,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
     if (activeTab === "supplier") {
       navigation.navigate(NAVIGATION.ADD_EDIT_SUPPLIER);
     } else {
-      navigation.navigate(NAVIGATION.ADD_EDIT_CUSTOMER);
+      navigation.navigate(NAVIGATION.ADD_EDIT_CUSTOMER, { business: business });
     }
   }
 
@@ -149,7 +199,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
 
       <View style={styles.headercontainer}>
         <View>
-          <Text style={styles.businessName}>{t('business')}</Text>
+          <Text style={styles.businessName}>{business}</Text>
           {phoneNumber && <Text style={styles.ownerName}>{phoneNumber}</Text>}
         </View>
 
@@ -206,20 +256,34 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
       <HorizontalLine />
 
       {/* Replace ScrollView with FlatList */}
-      <FlatList
-        data={transation}
+      {/* <FlatList
+        data={userData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          return activeTab === "customer" && item.userType === "customer" ? (
-            <CustomerList transation={[item]} navigation={navigation} />
-          ) : activeTab === "supplier" && item.userType === "supplier" ? (
-            <Supplier transation={[item]}  navigation={navigation} />
-          ) : null;
+          return 
         }}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
-      />
+        ListEmptyComponent={<View style={{
+          justifyContent: 'center',
+          flex: 1,
+          alignItems: 'center',
+          height: '100%',
+          alignContent: 'center'
+        }}><Text>{t("no_data_found")}</Text></View>} // Display message if empty
+      /> */}
+      {
+        activeTab === "customer" ? (
+          <CustomerList user={Array.isArray(userData) ? userData : [userData]}
+            onRefreshList={fetchList}
+            navigation={navigation} />
+        ) : activeTab === "supplier" ? (
+          <></>
+          // <Supplier transation={userData?.transactions} navigation={navigation} />
+        ) : null
+      }
+
 
 
       <TouchableOpacity style={styles.fab} onPress={handlePress}>

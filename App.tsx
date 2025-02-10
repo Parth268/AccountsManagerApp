@@ -38,7 +38,7 @@ const App = () => {
         firebase.initializeApp({
           apiKey: 'AIzaSyBckuMisi2DLuz5ahV2RiMHEQdC_e1ubZI',
           authDomain: 'account-manager-6e9e0.firebaseapp.com',
-          databaseURL: 'https://account-manager-6e9e0.firebaseio.com',
+          databaseURL: 'https://account-manager-6e9e0-default-rtdb.firebaseio.com',
           projectId: 'account-manager-6e9e0',
           storageBucket: 'account-manager-6e9e0.appspot.com',
           messagingSenderId: '498251559925',

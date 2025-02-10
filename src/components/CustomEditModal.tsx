@@ -15,13 +15,13 @@ interface CustomerEditModalProps {
     visible: boolean;
     customer_Data: {
         name: string;
-        phone: string;
+        phoneNumber: string;
         email: string;
         address: string;
     };
     title:string;
     onClose: () => void;
-    onSave: (data: { name: string; phone: string; email: string; address: string }) => void;
+    onSave: (data: { name: string; phoneNumber: string; email: string; address: string }) => void;
 }
 
 const CustomerEditModal: React.FC<CustomerEditModalProps> = ({
@@ -33,7 +33,7 @@ const CustomerEditModal: React.FC<CustomerEditModalProps> = ({
 }) => {
     const { t } = useTranslation();
     const { themeProperties } = useAppTheme();
-    const [formData, setFormData] = useState<{ name: string; phone: string; email: string; address: string }>({
+    const [formData, setFormData] = useState<{ name: string; phoneNumber: string; email: string; address: string }>({
         ...customer_Data
     });
 
@@ -56,11 +56,11 @@ const CustomerEditModal: React.FC<CustomerEditModalProps> = ({
                     />
                     <TextInput
                         style={[styles.input, { color: themeProperties.textColor, borderColor: themeProperties.textColor }]}
-                        placeholder={t("phone")}
+                        placeholder={t("phoneNumber")}
                         placeholderTextColor={themeProperties.textColor}
                         keyboardType="phone-pad"
-                        value={formData.phone}
-                        onChangeText={(text) => handleChange("phone", text)}
+                        value={formData.phoneNumber}
+                        onChangeText={(text) => handleChange("phoneNumber", text)}
                     />
                     <TextInput
                         style={[styles.input, { color: themeProperties.textColor, borderColor: themeProperties.textColor }]}

@@ -27,8 +27,9 @@ interface Transaction {
 }
 
 interface Props {
-  transation: Transaction[];
+  user: User[];
   navigation: any;
+  onRefreshList: () => {}
 }
 
 interface Customer {
@@ -39,10 +40,28 @@ interface Customer {
   email: string;
 }
 
-const CustomerList: React.FC<Props> = ({ transation, navigation }: Props) => {
+
+
+interface User {
+  id: string;
+  phoneNumber: string;
+  type: "receive" | "send";
+  amount: number;
+  name: string;
+  email: string;
+  timestamp: string;
+  userType: "customer" | "supplier";
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  transactions: Transaction[]; // Properly typed array of transactions
+}
+
+
+const CustomerList: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
   const { t } = useTranslation();
   const { theme, themeProperties } = useAppTheme();
-  const [customersTransation, setCustomersTransation] = useState<Transaction[]>(transation);
+  const [customersTransation, setCustomersTransation] = useState<User[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [customer, setCustomer] = useState<Customer[]>()
   const [alertVisible, setAlertVisible] = useState(false);
@@ -50,18 +69,10 @@ const CustomerList: React.FC<Props> = ({ transation, navigation }: Props) => {
 
   useEffect(() => {
     fetchCustomerData()
-  }, [])
+  }, [user])
 
   const fetchCustomerData = () => {
-    setCustomer([
-      {
-        userId: "2d4f5gt",
-        name: "John Doe",
-        type: "customer",
-        phoneNumber: "123-456-7890",  
-        email: "johndoe@example.com",
-      }
-    ])
+    setCustomersTransation(user)
   }
 
   const closeAlert = () => {
@@ -77,7 +88,7 @@ const CustomerList: React.FC<Props> = ({ transation, navigation }: Props) => {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     // Simulate fetch action (replace with your data fetch logic)
-    fetchCustomerData()
+    onRefreshList()
     setRefreshing(false);
   }, []);
 
@@ -87,7 +98,7 @@ const CustomerList: React.FC<Props> = ({ transation, navigation }: Props) => {
   }
 
   // Render each customer item
-  const renderCustomerItem = ({ item }: { item: Transaction }) => {
+  const renderCustomerItem = ({ item }: { item: User }) => {
     const transactionTimestamp = item?.timestamp
       ? new Date(item?.timestamp)
       : new Date();
@@ -99,13 +110,18 @@ const CustomerList: React.FC<Props> = ({ transation, navigation }: Props) => {
     });
 
     // const customerData
-    const customerData = customer?.find(c => c.userId === item?.userId);
+    const customerData = customersTransation?.find(c => c.userId === item?.userId);
 
 
     const isDarkMode = theme === 'dark';
 
     const handleOnPressItem = () => {
-      navigation.navigate(NAVIGATION.CUSTOMER_TRANSACTION_SCREEN, { transction_1: item, customerData: customerData })
+    
+        navigation.navigate(NAVIGATION.CUSTOMER_TRANSACTION_SCREEN, {
+          transction_1: item?.transactions,
+          customerData: customerData
+        })
+      
     }
 
     return (
@@ -128,18 +144,19 @@ const CustomerList: React.FC<Props> = ({ transation, navigation }: Props) => {
 
           <View style={{ flex: 1 }}>
             {/* Conditional background color */}
-            <View style={[styles.sendMoneyStatus, {
-              backgroundColor: item?.type === 'send' ? '#cb4750' : '#8BC34A'
-            }]} >
-              {
-                item?.type === 'send' ? (
-                  <Text style={styles.sendMoneyText}>Debit: {item?.amount}</Text>
-                ) : (
-                  <Text style={styles.sendMoneyText}>Credit: {item?.amount}</Text>
-                )
-              }
-            </View>
-
+            {item?.amount !== 0 &&
+              <View style={[styles.sendMoneyStatus, {
+                backgroundColor: item?.type === 'send' ? '#cb4750' : '#8BC34A'
+              }]} >
+                {
+                  item?.type === 'send' ? (
+                    <Text style={styles.sendMoneyText}>{t("debit")}: {item?.amount}</Text>
+                  ) : (
+                    <Text style={styles.sendMoneyText}>{t("credit")} {item?.amount}</Text>
+                  )
+                }
+              </View>
+            }
             {/* Timestamp */}
             <View style={styles.timestampContainer}>
               <Text style={[styles.timestampText, { color: isDarkMode ? '#bbb' : '#777' }]}>{formattedTimestamp}</Text>
@@ -154,29 +171,33 @@ const CustomerList: React.FC<Props> = ({ transation, navigation }: Props) => {
     <View style={[styles.container, { backgroundColor: themeProperties.backgroundColor }]}>
       <FlatList
         data={customersTransation}
-        keyExtractor={(item) => item?.email} // or item.name, if you prefer a unique identifier
+        keyExtractor={(item) => item?.id?.toString() || item?.email}
         renderItem={renderCustomerItem}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListEmptyComponent={<View style={{
+          justifyContent: 'center',
+          alignContent: 'center',
+          flex: 1,
+          alignItems: 'center',
+        }}><Text>{t("no_data_found")}</Text></View>} // Display message if empty
       />
 
-      <CustomAlertUser
+
+      {/* <CustomAlertUser
         visible={alertVisible}
         title="Contact"
-        message={`Please select option for contact a  ${customersTransation[0].name}`}
+        message={`Please select option for contact a  ${customersTransation?.name}`}
         data={`
-Transaction ID: ${customersTransation[0].transationId}
-Amount: ${customersTransation[0].amount}
-Type: ${customersTransation[0].type.charAt(0).toUpperCase() + customersTransation[0].type.slice(1)}
-Date Time: ${new Date(customersTransation[0].timestamp).toLocaleString()}
+Amount: ${customersTransation?.amount}
+Type: ${customersTransation?.type.charAt(0).toUpperCase() + customersTransation?.type.slice(1)}
+Date Time: ${new Date(customersTransation?.timestamp).toLocaleString()}
 `}
         onClose={closeAlert}
         onConfirm={confirmAction}
-        phoneNumber={customersTransation[0].phoneNumber} // Pass the phone number here
-        userName={customersTransation[0].name} // Pass the user's name here
-      />
+        phoneNumber={customersTransation?.phoneNumber} // Pass the phone number here
+        userName={customersTransation?.name} // Pass the user's name here
+      /> */}
 
 
 

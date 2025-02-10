@@ -20,18 +20,27 @@ import CustomAlertTranscation from '../../components/CustomAlertTranscation';
 import CustomerEditModal from '../../components/CustomEditModal';
 import { generateAndSharePDF } from '../../utils/pdfUtils';
 
+import database from "@react-native-firebase/database";
+import auth from "@react-native-firebase/auth";
+import CustomAlertTransaction from '../../components/CustomAlertTranscation';
+
 // Example data structure for transaction entries
 interface TransactionEntry {
   id: string;
-  date: string;
-  time: string;
+  userId: string;
+  phoneNumber: string;
+  type: 'receive' | 'send';
   amount: number;
-  balance: number;
-  type: 'gave' | 'got'; // 'gave' = red, 'got' = green
+  name: string;
+  imageurl: string;
+  email: string;
+  timestamp: string;
+  userType: 'customer' | 'supplier';
+  transationId: string;
 }
 
 interface Props {
-  transation: [];
+  transation: TransactionEntry[];
   navigation: any;
   route: any;
 }
@@ -44,28 +53,32 @@ interface Customer {
   email: string;
 }
 
-const transactions: TransactionEntry[] = [
-  { id: 'T1001', date: '31 Jan 25', time: '07:34 AM', amount: 56500, balance: 2058, type: 'gave' },
-  { id: 'T1002', date: '31 Jan 25', time: '07:34 AM', amount: 9, balance: 2623, type: 'got' },
-  { id: 'T1003', date: '31 Jan 25', time: '07:35 AM', amount: 2626, balance: 525, type: 'got' },
-  { id: 'T1004', date: '31 Jan 25', time: '07:40 AM', amount: 6, balance: 12, type: 'gave' },
-  { id: 'T1005', date: '31 Jan 25', time: '07:45 AM', amount: 120, balance: 1132, type: 'got' },
-  { id: 'T1006', date: '31 Jan 25', time: '07:50 AM', amount: 50, balance: 1082, type: 'gave' },
-  { id: 'T1007', date: '31 Jan 25', time: '07:55 AM', amount: 230, balance: 1312, type: 'got' },
-  { id: 'T1008', date: '31 Jan 25', time: '08:00 AM', amount: 75, balance: 1237, type: 'gave' },
-  { id: 'T1009', date: '31 Jan 25', time: '08:10 AM', amount: 600, balance: 1837, type: 'got' },
-  { id: 'T1010', date: '31 Jan 25', time: '08:20 AM', amount: 300, balance: 1537, type: 'gave' },
-  { id: 'T1011', date: '31 Jan 25', time: '08:30 AM', amount: 180, balance: 1717, type: 'got' },
-  { id: 'T1012', date: '31 Jan 25', time: '08:40 AM', amount: 90, balance: 1627, type: 'gave' },
-];
+
+
+interface User {
+  id: string;
+  phoneNumber: string;
+  type: "receive" | "send";
+  amount: number;
+  name: string;
+  email: string;
+  timestamp: string;
+  userType: "customer" | "supplier";
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  transactions: TransactionEntry[]; // Properly typed array of transactions
+}
+
 
 const calculateTotal = (transactions: TransactionEntry[]): Promise<{ totalGave: number; totalGot: number }> => {
   return new Promise((resolve) => {
+    console.log("cLC ", transactions)
     const totals = transactions.reduce(
       (totals, transaction) => {
-        if (transaction.type === 'gave') {
+        if (transaction.type === 'send') {
           totals.totalGave += transaction.amount;
-        } else if (transaction.type === 'got') {
+        } else if (transaction.type === 'receive') {
           totals.totalGot += transaction.amount;
         }
         return totals;
@@ -87,21 +100,37 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
   const [settlementAmount, setSettlementAmount] = useState(0);
   const [isEditCustomer, setIsEditCustomer] = useState(false)
   const [inputValue, setInputValue] = React.useState("")
-  const [customer, setCustomer] = React.useState<Customer>(customerData)
+  const [customer, setCustomer] = React.useState<User>(customerData)
   const [refreshing, setRefreshing] = useState(false);
+  const [transactions, setTransactions] = useState<TransactionEntry[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [transactionType, setTransactionType] = useState("send")
+  const [transactionValue, setTransactionValue] = useState("");
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
   const onRefresh = () => {
     setRefreshing(true);
 
-    
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 20);
+    fetchList().then((data) => {
+      let findData = data?.find(c => c.phoneNumber === customerData?.phoneNumber);
+      setCustomer(findData || customerData);
+      setTransactions(findData?.transactions || []);
+    }).finally(() => {
+      setRefreshing(false); // Ensure refreshing stops even if fetchList fails
+    });
   };
 
   useEffect(() => {
     fetchData()
+    fetchList().then((data) => {
+      let findData = data?.find(c => c.phoneNumber === customerData?.phoneNumber);
+      console.log("findData ", findData)
+      setCustomer(findData || customerData);
+      setTransactions(findData?.transactions || []);
+    });
   }, [])
+
+  useEffect(() => { fetchData() }, [transactions])
 
   const fetchData = async () => {
     calculateTotal(transactions).then((totals) => {
@@ -111,23 +140,199 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
     });
   }
 
+  const fetchList = async (): Promise<User[]> => {
+    try {
+      const user = auth().currentUser;
+      if (!user) {
+        console.log("User not authenticated");
+        return [];
+      }
+
+      const userId = user.uid;
+
+      const userRef = database().ref(userId);
+
+      const snapshot = await userRef.once("value");
+
+      if (!snapshot.exists()) {
+        console.log("No data available");
+        return [];
+      }
+
+      const rawData: Record<string, any> = snapshot.val();
+      console.log("rawData ",)
+      const users: User[] = Object.entries(rawData).map(([key, value]) => ({
+        id: value.id ?? "",
+        phoneNumber: value.phoneNumber ?? "",
+        type: value.type === "receive" || value.type === "send" ? value.type : "receive", // Defaulting
+        amount: Number(value.amount) || 0,
+        name: value.name ?? "",
+        email: value.email ?? "",
+        timestamp: value.timestamp, // Convert timestamp
+        userType: value.userType === "customer" || value.userType === "supplier" ? value.userType : "customer", // Defaulting
+        createdAt: value.createdAt,
+        updatedAt: value.updatedAt,
+        userId: key, // Firebase key as userId
+        transactions: value.transactions
+          ? Object.entries(value.transactions).map(([txKey, tx]) => ({
+            id: key, // User ID
+            userId: key, // Firebase key as userId
+            phoneNumber: value.phoneNumber ?? "",
+            type: tx?.type === "receive" || tx?.type === "send" ? tx?.type : "unknown",
+            amount: Number(tx?.amount) || 0,
+            name: value.name ?? "",
+            imageurl: "", // If you have an image URL field, assign it properly
+            email: value.email ?? "",
+            timestamp: tx?.timestamp,
+            userType: value.userType === "customer" || value.userType === "supplier" ? value.userType : "customer",
+            transactionId: txKey, // Firebase transaction ID
+          }))
+          : [], // Ensure transactions default to an empty array
+      }));
+
+
+
+      return users;
+    } catch (error) {
+      console.error("Error fetching list:", (error as Error).message);
+      return [];
+    }
+  };
+
 
   const saveTranscation = () => {
-
+    fetchList()
+    fetchData()
     onRefresh()
   }
+  const triggerSnackbar = (message: string = "") => {
+    setSnackbarMessage(message);
+    setTimeout(() => setSnackbarMessage(""), 2000); // Clear after 2 seconds
+  };
 
-  const saveCustomerDetails = () => {
+  const saveCustomerDetails = async(data:{ name: string; phone: string; email: string; address: string }) => {
     setIsEditCustomer(!isEditCustomer)
+    if (![data?.name, data?.phone].every(Boolean)) {
+      triggerSnackbar(t("please_fill_name_phone"));
+      return;
+    }
+    
+    const phoneRegex = /^[0-9]{10}$/; // Adjust regex as needed (e.g., for country codes)
+    if (!phoneRegex.test(data?.phone)) {
+      triggerSnackbar(t("invalid_phone_number"));
+      return;
+    }
+    
+    
+    try {
+      const userId = auth().currentUser?.uid;
+      if (!userId) throw new Error("User is not authenticated");
+    
+      const userRef = database().ref(`${userId}`);
+      
+      // Query for an existing user with the same phone number
+      const snapshot = await userRef.orderByChild("phoneNumber").equalTo(data?.phone).once("value");
+    
+      if (snapshot.exists()) {
+        // setCustomerExitData({ data?.name, data?.phoneNumber, email });
+        triggerSnackbar(t("phone_exist"));
+        return;
+      }
+    
+      // Add a new user entry
+      const newEntryRef = userRef.push();
+      const timestamp = Date.now();
+    
+      await newEntryRef.set({
+        id:userId,
+        name:data?.name,
+        email: data?.email || "", // Ensure empty fields don’t break the app
+        phoneNumber:data?.phone,
+        address: data?.address || ""
+      });
+    
+      triggerSnackbar(t("data_added"));
+      navigation.goBack();
+    } catch (error) {
+      console.error("Failed to save customer:", error);
+      triggerSnackbar(t("something_went_wrong"));
+    } finally {
+
+    }
+    
     onRefresh()
   }
+
+  const handleSaveTransaction = async (input: string) => {
+    try {
+      const userId = auth().currentUser?.uid;
+      if (!userId) {
+        throw new Error("User is not authenticated");
+      }
+
+      const userRef = database().ref(`${userId}`);
+      const snapshot = await userRef
+        .orderByChild("phoneNumber")
+        .equalTo(customerData?.phoneNumber)
+        .once("value");
+
+      const timestamp = Date.now();
+      const transactionId = userRef.push().key; // Unique transaction ID
+
+      const newTransaction = {
+        id: transactionId,
+        userId,
+        phoneNumber: customerData.phoneNumber,
+        type: transactionType,
+        amount: input,
+        name: customerData.name,
+        email: customerData.email,
+        timestamp,
+        userType: "customer",
+      };
+
+      if (snapshot.exists()) {
+        // **Step 1: Update existing user**
+        const userKey = Object.keys(snapshot.val())[0]; // Get the first user key
+        const userTransactionsRef = database().ref(`${userId}/${userKey}/transactions`);
+
+        await userTransactionsRef.push(newTransaction); // Add new transaction
+      } else {
+        // **Step 2: Create new user and add the transaction**
+        const newUserRef = userRef.push();
+        await newUserRef.set({
+          id: newUserRef.key,
+          amount: input,
+          name: customerData.name,
+          email: customerData.email,
+          phoneNumber: customerData.phoneNumber,
+          type: transactionType,
+          userType: "customer",
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          transactions: [newTransaction], // Save transaction as an array
+        });
+      }
+
+      fetchList().then((data) => {
+        let findData = data?.find(c => c.phoneNumber === customerData?.phoneNumber);
+        console.log("findData ", findData)
+        setCustomer(findData || customerData);
+        setTransactions(findData?.transactions || []);
+      });
+      console.log("Transaction saved successfully");
+    } catch (error) {
+      console.error("Failed to save transaction:", error);
+    }
+    console.log("Transaction Saved:", input);
+  };
 
   const handleProfileEdit = () => {
     setIsEditCustomer(!isEditCustomer)
   }
 
   const handleReport = () => {
-    generateAndSharePDF(`${customer?.name} Report`, settlementAmount, transactions, customer)
+    // generateAndSharePDF(`${customer?.name} Report`, settlementAmount, transactions, customer)
   }
 
   const handleCall = () => {
@@ -169,8 +374,18 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
 
 
   const renderItemList = ({ item }: { item: TransactionEntry }) => {
-    const isGave = item.type === 'gave';
+    const isGave = item.type === 'send';
     const amountColor = isGave ? 'red' : 'green';
+
+    const transactionTimestamp = item?.timestamp
+      ? new Date(item?.timestamp)
+      : new Date();
+
+    const formattedTimestamp = transactionTimestamp.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
 
     // Handler for edit button
     const handleEdit = () => {
@@ -189,17 +404,17 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
           <Text
             style={[styles.transactionDateTime, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 2 }]}
           >
-            {item.date} {item.time}
+            {formattedTimestamp}
           </Text>
           <Text
             style={[styles.transactionType, { color: amountColor, fontSize: themeProperties.textSize - 2 }]}
           >
-            {isGave ? t('you_gave') : t('you_got')} {t('amt')}: {item.amount}
+            {isGave ? t('you_send') : t('you_got')} {t('amt')}: {item.amount}
           </Text>
           <Text
             style={[styles.transactionBalance, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 2 }]}
           >
-            {t('bal')} {t('amt')} {item.balance}
+            {t('bal')} {t('amt')} {settlementAmount}
           </Text>
         </View>
 
@@ -250,7 +465,7 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
               <Text
                 style={[styles.customerLabel, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 4 }]}
               >
-                {customer?.type === "customer" ? t('customer') : t('supplier')}
+                {customer?.userType === "customer" ? t('customer') : t('supplier')}
               </Text>
             </View>
           </View>
@@ -328,6 +543,12 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
               }}
             />
           )}
+          ListEmptyComponent={<View style={{
+            justifyContent: 'center',
+            alignContent: 'center',
+            flex: 1,
+            alignItems: 'center',
+          }}><Text>{t("no_data_found")}</Text></View>} // Display message if empty
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -335,12 +556,19 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
 
         {/* Bottom totals row */}
         <View style={styles.bottomRow}>
-          <TouchableOpacity style={[styles.bottomButton, { backgroundColor: 'red' }]}>
+          <TouchableOpacity onPress={() => {
+            setTransactionType("send")
+            setModalVisible(!modalVisible)
+          }} style={[styles.bottomButton, { backgroundColor: 'red' }]}>
             <Text style={[styles.bottomButtonText, { fontSize: themeProperties.textSize - 2 }]}>
-              {t('you_gave')}
+              {t('you_send')}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.bottomButton, { backgroundColor: 'green' }]}>
+          <TouchableOpacity onPress={() => {
+            setTransactionType("receive")
+            setModalVisible(!modalVisible)
+
+          }} style={[styles.bottomButton, { backgroundColor: 'green' }]}>
             <Text style={[styles.bottomButtonText, { fontSize: themeProperties.textSize - 2 }]}>
               {t('you_got')}
             </Text>
@@ -365,7 +593,24 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
           customer_Data={customerData}
           title={t("change_customer_detail")}
           onClose={() => setIsEditCustomer(false)}
-          onSave={saveCustomerDetails}
+          onSave={(data)=>{saveCustomerDetails(data)}}
+        />
+      }
+
+      {
+        <CustomAlertTransaction
+          visible={modalVisible}
+          title="Enter Transaction Amount"
+          inputValueData={transactionValue}
+          onClose={() => {
+            setTransactionValue("")
+            setModalVisible(false)
+          }}
+
+          onSave={(data) => {
+            setTransactionValue("")
+            handleSaveTransaction(data)
+          }}
         />
       }
 

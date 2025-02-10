@@ -131,5 +131,24 @@
   "customer_address": "Customer Address (optional)",
   "please_fill_name_phone":"Please Fill Name and Phone Number",
   "debit":"Debit",
-  "credit":"Credit"
+  "credit":"Credit",
+  "data_added":"Data Added successfully",
+  "phone_exist":"Phone number already exists!",
+  "user_exist":"User already Exists",
+  "no_transactions_found":"No transactions found",
+  "no_data_found":"No data Found",
+  "phone_number": "Phone Number",
+  "payment_received": "Payment Received",
+  "payment_sent": "Payment Sent",
+  "total_given": "Total Given",
+  "total_received": "Total Received",
+  "you_send":"You Send",
+  "transaction_history": "Transaction History",
+  "add_transaction": "Add Transaction",
+  "delete": "Delete",
+  "confirm_delete": "Are you sure you want to delete this transaction?",
+  "total_settlement": "Total Settlement",
+  "no_data": "No Data Available",
+  "failed_to_open_sms": "Failed to open SMS app."
+  
 }
