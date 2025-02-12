@@ -76,12 +76,10 @@ const LanguageSelectionScreen: React.FC<LanguageSelectionScreenProps> = ({ navig
   const handleLanguageSelect = async (language: Language) => {
     try {
 
-      console.log(language?.code)
       await changeLanguage(language.code);
       await AsyncStorage.setItem(DEFAULTS.LANGUAGE, JSON.stringify(language));
       await AsyncStorage.setItem(DEFAULTS.IS_OPEN_FIRST_TIME, "true");
       setSelectedLanguage(language);
-      console.log('Language saved successfully!');
 
       // After saving the language, navigate to the Login screen
       navigation.navigate(NAVIGATION.LOGIN); // Ensure "Login" screen is registered in your navigation stack

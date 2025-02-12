@@ -1,6 +1,7 @@
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import Share from 'react-native-share';
 import { Alert } from 'react-native';
+import { Transaction, User } from '../screens/types';
 
 /**
  * Generate a PDF file from HTML content and share it.
@@ -9,43 +10,33 @@ import { Alert } from 'react-native';
  * @param {Customer} customer - Customer details.
  */
 
-interface TransactionEntry {
-    id: string;
-    userId: string;
-    phoneNumber: string;
-    type: 'receive' | 'send';
-    amount: number;
-    name: string;
-    imageurl: string;
-    email: string;
-    timestamp: string;
-    userType: 'customer' | 'supplier';
-    transationId: string;
-}
 
-interface Customer {
-    userId: string;
-    name: string;
-    type: string;
-    phoneNumber: string;
-    email: string;
-}
-
-export const generateAndSharePDF = async (fileName: string, settlementAmount: number, transactions: TransactionEntry[], customer: Customer) => {
+export const generateAndSharePDF = async (fileName: string, settlementAmount: number, transactions: Transaction[], customer: User) => {
     // Calculate the total amount
     const totalAmount = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
 
     // Generate transaction rows dynamically
     const transactionRows = transactions
-        .map(transaction => `
+        .map(transaction => {
+            const formattedDate = new Intl.DateTimeFormat('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            }).format(new Date(transaction?.timestamp));
+
+            return (`
             <tr>
-                <td>${transaction.id}</td>
+                <td>${transaction?.id}</td>
                 <td>${customer.name}</td>
-                <td>${transaction.timestamp}</td>
+                <td>${formattedDate}</td>
                 <td>${transaction.type === 'send' ? 'Sent' : 'Received'}</td>
                 <td>$${transaction.amount}</td>
             </tr>
         `)
+        })
         .join('');
 
     const htmlContent = `
@@ -111,7 +102,7 @@ export const generateAndSharePDF = async (fileName: string, settlementAmount: nu
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="4" style="text-align: right;">Total Amount:</td>
+                    <td colspan="4" style="text-align: right;">Settlement Amount:</td>
                     <td>${settlementAmount}</td>
                 </tr>
             </tfoot>

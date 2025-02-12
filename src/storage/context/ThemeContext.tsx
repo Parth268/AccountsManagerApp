@@ -14,6 +14,7 @@ interface Theme {
   lightbgtextColor: string;
   backgroundColor: string;
   textSize: number;
+  borderColor: string;
 }
 
 // Define the theme context type
@@ -31,12 +32,14 @@ const themes: Record<"light" | "dark", Theme> = {
     textColor: "#000000",
     lightbgtextColor: "#000000",
     backgroundColor: "#FFFFFF",
+    borderColor: '#121212',
     textSize: 16,
   },
   dark: {
     textColor: "#FFFFFF",
     lightbgtextColor: "#444444",
     backgroundColor: "#121212",
+    borderColor: '#FFFFFF',
     textSize: 18,
   },
 };

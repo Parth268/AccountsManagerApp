@@ -1,5 +1,3 @@
-// src/context/LanguageContext.tsx
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import i18n from '../../locales/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -57,9 +55,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     loadSettings();
   }, []);
 
-  useEffect(() => {
-    console.log(" isDefaultTextisDefaultTextisDefaultText ", isDefaultText)
-  }, [isDefaultText])
+  
 
   const changeLanguage = async (lng: string) => {
     setLanguage(lng);

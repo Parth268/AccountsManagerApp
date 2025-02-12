@@ -10,81 +10,45 @@ import {
 } from "react-native";
 import { useAppTheme } from "../storage/context/ThemeContext";
 
-// Define types for the props
-interface CustomerEditModalProps {
+interface BusinessNameModalProps {
     visible: boolean;
-    customer_Data: {
-        name: string;
-        phoneNumber: string;
-        email: string;
-        address: string;
-    };
-    title:string;
+    title: string;
+    inputValueData: string;
     onClose: () => void;
-    onSave: (data: { name: string; phoneNumber: string; email: string; address: string }) => void;
+    onSave: (input: string) => void;
 }
 
-const CustomerEditModal: React.FC<CustomerEditModalProps> = ({
+const BusinessNameModal: React.FC<BusinessNameModalProps> = ({
     visible,
-    customer_Data,
-    onClose,
     title,
+    onClose,
+    inputValueData,
     onSave
 }) => {
     const { t } = useTranslation();
     const { themeProperties } = useAppTheme();
-    const [formData, setFormData] = useState<{ name: string; phoneNumber: string; email: string; address: string }>({
-        ...customer_Data
-    });
-
-    const handleChange = (field: string, value: string) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-    };
+    const [inputValue, setInputValue] = useState(inputValueData);
 
     return (
         <Modal transparent animationType="slide" visible={visible} onRequestClose={onClose}>
             <View style={styles.overlay}>
                 <View style={[styles.container, { backgroundColor: themeProperties.backgroundColor }]}>
-                    <Text style={[styles.title, { color: themeProperties.textColor }]}>{t("edit_customer")}</Text>
-                    
+                    <Text style={[styles.title, { color: themeProperties.textColor }]}>{title}</Text>
+
                     <TextInput
                         style={[styles.input, { color: themeProperties.textColor, borderColor: themeProperties.textColor }]}
-                        placeholder={t("name")}
+                        placeholder={t("enter_business_name")}
                         placeholderTextColor={themeProperties.textColor}
-                        value={formData.name}
-                        onChangeText={(text) => handleChange("name", text)}
+                        value={inputValue}
+                        onChangeText={setInputValue} // Allow any text input
                     />
-                    <TextInput
-                        style={[styles.input, { color: themeProperties.textColor, borderColor: themeProperties.textColor }]}
-                        placeholder={t("phoneNumber")}
-                        placeholderTextColor={themeProperties.textColor}
-                        keyboardType="phone-pad"
-                        maxLength={10} // Restrict input length
-                        value={formData.phoneNumber}
-                        onChangeText={(text) => handleChange("phoneNumber", text)}
-                    />
-                    <TextInput
-                        style={[styles.input, { color: themeProperties.textColor, borderColor: themeProperties.textColor }]}
-                        placeholder={t("email")}
-                        placeholderTextColor={themeProperties.textColor}
-                        keyboardType="email-address"
-                        value={formData.email}
-                        onChangeText={(text) => handleChange("email", text)}
-                    />
-                    <TextInput
-                        style={[styles.input, { color: themeProperties.textColor, borderColor: themeProperties.textColor }]}
-                        placeholder={t("address")}
-                        placeholderTextColor={themeProperties.textColor}
-                        value={formData.address}
-                        onChangeText={(text) => handleChange("address", text)}
-                    />
-                    
+
                     <View style={styles.actions}>
                         <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onClose}>
                             <Text style={styles.buttonText}>{t("cancel")}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={() => {
-                            onSave(formData);
+                            onSave(inputValue);
                             onClose();
                         }}>
                             <Text style={styles.buttonText}>{t("save")}</Text>
@@ -124,7 +88,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 10,
         fontSize: 16,
-        marginBottom: 10,
+        marginBottom: 20,
     },
     actions: {
         flexDirection: "row",
@@ -150,4 +114,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CustomerEditModal;
+export default BusinessNameModal;

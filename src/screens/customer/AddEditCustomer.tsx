@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   TextInput,
@@ -18,6 +18,8 @@ import { Snackbar } from "../../components/Snackbar";
 import auth from "@react-native-firebase/auth";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { NAVIGATION } from "../../utils/constants";
+import BusinessNameModal from "../../components/BusinessNameModal";
+import { useApp } from "../../storage/context/AppContext";
 
 
 interface AddEditCustomerProps {
@@ -43,18 +45,89 @@ interface User {
 const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) => {
   const { t } = useTranslation();
   const { themeProperties } = useAppTheme();
-  const { business } = route.params
+  const { business, changeBusinessName } = useApp()
 
   // Form state
   const [name, setName] = useState("Parth");
   const [email, setEmail] = useState("parth@gmail.com");
   const [phoneNumber, setPhoneNumber] = useState("1234567890");
   const [address, setAddress] = useState("At post karvad");
-  const [businessName, setbusinessName] = useState(business)
+  const [businessName, setBusinessName] = useState(business)
   const [loading, setLoading] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
   const [error, setError] = useState("");
   const [customerExistData, setCustomerExitData] = useState<User | null>(null);
+  const [isBusiness, setIsBusiness] = useState(false)
+  const [businessData, setBusinessData] = useState(business)
+
+
+  useEffect(() => {
+    loadBusinessName()
+  }, [])
+
+  const loadBusinessName = async () => {
+    setLoading(true);
+    try {
+      const user = auth().currentUser;
+      if (!user) {
+        console.log("User not authenticated");
+        return [];
+      }
+
+      const userId = user.uid;
+
+      const userRef = database().ref(userId);
+
+      const snapshot = await userRef.once("value");
+
+      if (!snapshot.exists()) {
+        console.log("No data available");
+      }
+
+      const rawData: Record<string, any> = snapshot.val();
+      const businessName = rawData.businessName
+      if (businessName) {
+        setBusinessName(businessName)
+      } else {
+        setBusinessName("")
+      }
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleBusiness = async (data: string) => {
+
+    setLoading(true);
+    try {
+      const userId = auth().currentUser?.uid;
+      if (!userId) {
+        throw new Error("User is not authenticated");
+      }
+
+      const userRef = database().ref(`${userId}`);
+
+      const newEntryRef = userRef.push();
+
+      await newEntryRef.set({
+        businessName: data
+      });
+
+      triggerSnackbar(t("data_added"))
+      setBusinessName(data)
+      changeBusinessName(data)
+    } catch (error) {
+      console.error("Failed to save customer:", error);
+      triggerSnackbar(t("something_went_wrong"));
+      setBusinessName("")
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
   const triggerSnackbar = (message: string = "") => {
     setSnackbarMessage(message);
@@ -73,14 +146,14 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
 
   const handleExistUser = () => {
     navigation.navigate(NAVIGATION.CUSTOMER_TRANSACTION_SCREEN, {
-      user:{
+      user: {
         name,
         email,
         phoneNumber,
         businessName,
         address,
-        amount:"",
-        type:"",
+        amount: "",
+        type: "",
         userType: "customer"
       }
     })
@@ -97,7 +170,7 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
       return;
     }
 
-    let id= btoa(`${name}${phoneNumber}`);
+    let id = btoa(`${name}${phoneNumber}`);
 
     setLoading(true);
 
@@ -126,18 +199,18 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
       const timestamp = Date.now();
 
       await newEntryRef.set({
-        id:id,
+        id: id,
         name,
         email,
         phoneNumber,
         businessName,
         address,
-        amount:"",
-        type:"",
+        amount: "",
+        type: "",
         userType: "customer",
         createdAt: timestamp,
         updatedAt: timestamp,
-        transcation:[]
+        transcation: []
       });
 
       triggerSnackbar(t("data_added"))
@@ -215,7 +288,11 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
 
         <TouchableOpacity style={[styles.button, loading && styles.buttonDisabled]} onPress={() => {
           if (!loading) {
-            handleSubmit()
+            if (businessName) {
+              handleSubmit()
+            } else {
+              setIsBusiness(true)
+            }
           }
         }} disabled={loading}>
           <Text style={styles.buttonText}>{loading ? t("loading") : t("add_customer")}</Text>
@@ -239,6 +316,20 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
       {/* {loading && <ActivityIndicator size={"large"} />} */}
 
       {snackbarMessage ? <Snackbar message={snackbarMessage} /> : null}
+
+      <BusinessNameModal
+        visible={isBusiness}
+        title={t("enter_business_name")}
+        onSave={(data) => {
+          setBusinessData(data)
+          setIsBusiness(!isBusiness)
+          handleBusiness(data)
+        }}
+        inputValueData={businessData}
+        onClose={() => {
+          setIsBusiness(!isBusiness)
+        }}
+      />
 
     </View>
   );

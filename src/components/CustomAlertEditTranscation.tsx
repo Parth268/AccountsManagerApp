@@ -9,83 +9,68 @@ import {
     TextInput
 } from "react-native";
 import { useAppTheme } from "../storage/context/ThemeContext";
+import Ionicons from "react-native-vector-icons/MaterialIcons";
+import { Transaction } from "../screens/types";
 
-// Define types for the props
-interface CustomerEditModalProps {
+interface CustomAlertEditTransactionProps {
     visible: boolean;
-    customer_Data: {
-        name: string;
-        phoneNumber: string;
-        email: string;
-        address: string;
-    };
-    title:string;
+    title: string;
+    inputValueData: Transaction;
     onClose: () => void;
-    onSave: (data: { name: string; phoneNumber: string; email: string; address: string }) => void;
+    onSave: (input: Transaction) => void;
 }
 
-const CustomerEditModal: React.FC<CustomerEditModalProps> = ({
+const CustomAlertEditTransaction: React.FC<CustomAlertEditTransactionProps> = ({
     visible,
-    customer_Data,
-    onClose,
     title,
+    onClose,
+    inputValueData,
     onSave
 }) => {
     const { t } = useTranslation();
     const { themeProperties } = useAppTheme();
-    const [formData, setFormData] = useState<{ name: string; phoneNumber: string; email: string; address: string }>({
-        ...customer_Data
-    });
-
-    const handleChange = (field: string, value: string) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-    };
+    const [inputValue, setInputValue] = useState<string>(inputValueData?.amount.toString());
 
     return (
         <Modal transparent animationType="slide" visible={visible} onRequestClose={onClose}>
             <View style={styles.overlay}>
                 <View style={[styles.container, { backgroundColor: themeProperties.backgroundColor }]}>
-                    <Text style={[styles.title, { color: themeProperties.textColor }]}>{t("edit_customer")}</Text>
-                    
+                    <Text style={[styles.title, { color: themeProperties.textColor }]}>{title}</Text>
+
                     <TextInput
                         style={[styles.input, { color: themeProperties.textColor, borderColor: themeProperties.textColor }]}
-                        placeholder={t("name")}
+                        placeholder={t("enter_amount")}
                         placeholderTextColor={themeProperties.textColor}
-                        value={formData.name}
-                        onChangeText={(text) => handleChange("name", text)}
+                        value={inputValue}
+                        keyboardType="number-pad"
+                        onChangeText={(data) => {
+                            const numericValue = data.replace(/[^0-9]/g, ""); // Remove non-numeric characters
+                            setInputValue(numericValue);
+                        }}
                     />
-                    <TextInput
-                        style={[styles.input, { color: themeProperties.textColor, borderColor: themeProperties.textColor }]}
-                        placeholder={t("phoneNumber")}
-                        placeholderTextColor={themeProperties.textColor}
-                        keyboardType="phone-pad"
-                        maxLength={10} // Restrict input length
-                        value={formData.phoneNumber}
-                        onChangeText={(text) => handleChange("phoneNumber", text)}
-                    />
-                    <TextInput
-                        style={[styles.input, { color: themeProperties.textColor, borderColor: themeProperties.textColor }]}
-                        placeholder={t("email")}
-                        placeholderTextColor={themeProperties.textColor}
-                        keyboardType="email-address"
-                        value={formData.email}
-                        onChangeText={(text) => handleChange("email", text)}
-                    />
-                    <TextInput
-                        style={[styles.input, { color: themeProperties.textColor, borderColor: themeProperties.textColor }]}
-                        placeholder={t("address")}
-                        placeholderTextColor={themeProperties.textColor}
-                        value={formData.address}
-                        onChangeText={(text) => handleChange("address", text)}
-                    />
-                    
+
+
                     <View style={styles.actions}>
                         <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onClose}>
                             <Text style={styles.buttonText}>{t("cancel")}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={() => {
-                            onSave(formData);
-                            onClose();
+                            onSave(
+                                {
+                                    id: inputValueData.id,
+                                    userId: inputValueData?.userId,
+                                    phoneNumber: inputValueData?.phoneNumber,
+                                    type: inputValueData?.type,
+                                    amount: parseInt(inputValue),
+                                    name: inputValueData?.name,
+                                    imageUrl: inputValueData?.imageUrl,
+                                    email: inputValueData?.email,
+                                    timestamp: inputValueData?.timestamp,
+                                    userType: inputValueData?.userType,
+                                    transactionId: inputValueData?.transactionId
+                                }
+                            )
+                            onClose()
                         }}>
                             <Text style={styles.buttonText}>{t("save")}</Text>
                         </TouchableOpacity>
@@ -124,7 +109,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 10,
         fontSize: 16,
-        marginBottom: 10,
+        marginBottom: 20,
     },
     actions: {
         flexDirection: "row",
@@ -150,4 +135,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CustomerEditModal;
+export default CustomAlertEditTransaction;

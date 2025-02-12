@@ -48,6 +48,13 @@
   "email_placeholder": "Enter your email address",
   "password_placeholder": "Enter your password",
   "register_button": "Sign Up",
+  "forgot_password": "Forgot Password",
+  "forgot_password_description": "Enter your email address to reset your password.",
+  "address":"Address",
+  "phoneNumber":"Phone No",
+  "password":"Password",
+  "email":"Enter",
+  "name":"Name",
   "register_success": "Register Success",
   "have_account": "Already have an account? Log in",
   "registration_failed": "Registration failed. Please try again.",
@@ -109,7 +116,7 @@
   "enter_customer_address": "Enter customer address",
   "loading": "Loading...",
   "update_customer": "Update Customer",
-  "transcation_screen": "Transcation",
+  "transcation_screen": "Transaction",
   "transcation_list": "Transcation List",
   "change_transcation_detail": "Change Transaction Details",
   "change_customer_detail": "Change Customer Detail",
@@ -146,9 +153,11 @@
   "transaction_history": "Transaction History",
   "add_transaction": "Add Transaction",
   "delete": "Delete",
+  "transactions":"Transactions",
   "confirm_delete": "Are you sure you want to delete this transaction?",
   "total_settlement": "Total Settlement",
   "no_data": "No Data Available",
-  "failed_to_open_sms": "Failed to open SMS app."
-  
+  "failed_to_open_sms": "Failed to open SMS app.",
+  "enter_business_name":"Enter Business Name ",
+  "data_updated":"Data Updated"
 }

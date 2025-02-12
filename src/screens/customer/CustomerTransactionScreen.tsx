@@ -4,13 +4,12 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   SafeAreaView,
-  Image,
   FlatList,
   Linking,
   Alert,
-  RefreshControl
+  RefreshControl,
+  ActivityIndicator
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../storage/context/ThemeContext';
@@ -19,61 +18,24 @@ import Icon from 'react-native-vector-icons/MaterialIcons'; // Using MaterialIco
 import CustomAlertTranscation from '../../components/CustomAlertTranscation';
 import CustomerEditModal from '../../components/CustomEditModal';
 import { generateAndSharePDF } from '../../utils/pdfUtils';
-
 import database from "@react-native-firebase/database";
 import auth from "@react-native-firebase/auth";
 import CustomAlertTransaction from '../../components/CustomAlertTranscation';
+import { User, Transaction } from '../types'
+import { Snackbar } from '../../components/Snackbar';
+import CustomAlertEditTransaction from '../../components/CustomAlertEditTranscation';
+import { RawTransaction } from '../types/RawTransaction';
 
-// Example data structure for transaction entries
-interface TransactionEntry {
-  id: string;
-  userId: string;
-  phoneNumber: string;
-  type: 'receive' | 'send';
-  amount: number;
-  name: string;
-  imageurl: string;
-  email: string;
-  timestamp: string;
-  userType: 'customer' | 'supplier';
-  transationId: string;
-}
 
 interface Props {
-  transation: TransactionEntry[];
+  transation: Transaction[];
   navigation: any;
   route: any;
 }
 
-interface Customer {
-  userId: string;
-  name: string;
-  type: string;
-  phoneNumber: string;
-  email: string;
-}
 
-
-
-interface User {
-  id: string;
-  phoneNumber: string;
-  type: "receive" | "send";
-  amount: number;
-  name: string;
-  email: string;
-  timestamp: string;
-  userType: "customer" | "supplier";
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  transactions: TransactionEntry[]; // Properly typed array of transactions
-}
-
-
-const calculateTotal = (transactions: TransactionEntry[]): Promise<{ totalGave: number; totalGot: number }> => {
+const calculateTotal = (transactions: Transaction[]): Promise<{ totalGave: number; totalGot: number }> => {
   return new Promise((resolve) => {
-    console.log("cLC ", transactions)
     const totals = transactions.reduce(
       (totals, transaction) => {
         if (transaction.type === 'send') {
@@ -93,8 +55,8 @@ const calculateTotal = (transactions: TransactionEntry[]): Promise<{ totalGave: 
 const CustomerTransactionScreen = ({ route, navigation }: Props) => {
 
   const { t } = useTranslation();
-  const { theme, toggleTheme, toggleThemeStatus, themeProperties, themeStatus } = useAppTheme();
-  const { transction_1, customerData } = route.params;
+  const { themeProperties } = useAppTheme();
+  const { customerData } = route.params;
 
   const [isAlertVisible, setAlertVisible] = React.useState(false);
   const [settlementAmount, setSettlementAmount] = useState(0);
@@ -102,33 +64,41 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
   const [inputValue, setInputValue] = React.useState("")
   const [customer, setCustomer] = React.useState<User>(customerData)
   const [refreshing, setRefreshing] = useState(false);
-  const [transactions, setTransactions] = useState<TransactionEntry[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [transactionType, setTransactionType] = useState("send")
   const [transactionValue, setTransactionValue] = useState("");
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [isEditTransaction, setIsEditTransaction] = useState<boolean>(false)
+  const [editTransaction, setEditTransaction] = useState<Transaction>()
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onRefresh = () => {
-    setRefreshing(true);
+  const fetchListData = async () => {
+    setIsLoading(true)
+    try {
+      fetchList().then((data) => {
+        let findData = data?.find(c => c.id === customerData?.id);
+        if (findData) {
+          setCustomer(findData);
+          setTransactions(findData?.transactions);
+        }
+      })
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false)
 
-    fetchList().then((data) => {
-      let findData = data?.find(c => c.phoneNumber === customerData?.phoneNumber);
-      setCustomer(findData || customerData);
-      setTransactions(findData?.transactions || []);
-    }).finally(() => {
-      setRefreshing(false); // Ensure refreshing stops even if fetchList fails
-    });
+    }
   };
 
   useEffect(() => {
-    fetchData()
-    fetchList().then((data) => {
-      let findData = data?.find(c => c.phoneNumber === customerData?.phoneNumber);
-      console.log("findData ", findData)
-      setCustomer(findData || customerData);
-      setTransactions(findData?.transactions || []);
-    });
-  }, [])
+    fetchListData();
+  }, []);
+
+  const onRefresh = () => {
+    fetchListData();
+  };
+
 
   useEffect(() => { fetchData() }, [transactions])
 
@@ -136,7 +106,6 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
     calculateTotal(transactions).then((totals) => {
       let result = totals.totalGot - totals.totalGave
       setSettlementAmount(result)
-      console.log(`Total Given: ${totals.totalGave}, Total Received: ${totals.totalGot}`);
     });
   }
 
@@ -144,7 +113,6 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
     try {
       const user = auth().currentUser;
       if (!user) {
-        console.log("User not authenticated");
         return [];
       }
 
@@ -155,39 +123,41 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
       const snapshot = await userRef.once("value");
 
       if (!snapshot.exists()) {
-        console.log("No data available");
         return [];
       }
 
       const rawData: Record<string, any> = snapshot.val();
-      console.log("rawData ",)
+
       const users: User[] = Object.entries(rawData).map(([key, value]) => ({
         id: value.id ?? "",
         phoneNumber: value.phoneNumber ?? "",
-        type: value.type === "receive" || value.type === "send" ? value.type : "receive", // Defaulting
+        type: value.type === "receive" || value.type === "send" ? value.type : "receive",
         amount: Number(value.amount) || 0,
         name: value.name ?? "",
         email: value.email ?? "",
-        timestamp: value.timestamp, // Convert timestamp
-        userType: value.userType === "customer" || value.userType === "supplier" ? value.userType : "customer", // Defaulting
-        createdAt: value.createdAt,
-        updatedAt: value.updatedAt,
-        userId: key, // Firebase key as userId
+        timestamp: value.timestamp ?? "",
+        userType: value.userType === "customer" || value.userType === "supplier" ? value.userType : "customer",
+        createdAt: value.createdAt ?? "",
+        updatedAt: value.updatedAt ?? "",
+        userId: key,
         transactions: value.transactions
-          ? Object.entries(value.transactions).map(([txKey, tx]) => ({
-            id: key, // User ID
-            userId: key, // Firebase key as userId
-            phoneNumber: value.phoneNumber ?? "",
-            type: tx?.type === "receive" || tx?.type === "send" ? tx?.type : "unknown",
-            amount: Number(tx?.amount) || 0,
-            name: value.name ?? "",
-            imageurl: "", // If you have an image URL field, assign it properly
-            email: value.email ?? "",
-            timestamp: tx?.timestamp,
-            userType: value.userType === "customer" || value.userType === "supplier" ? value.userType : "customer",
-            transactionId: txKey, // Firebase transaction ID
-          }))
-          : [], // Ensure transactions default to an empty array
+          ? Object.entries(value.transactions).map(([txKey, tx]) => {
+            const transaction = tx as Transaction; // ✅ Explicitly typing `tx`
+            return {
+              id: key, // User ID
+              userId: key,
+              phoneNumber: value.phoneNumber ?? "",
+              type: transaction.type === "receive" || transaction.type === "send" ? transaction.type : "unknown",
+              amount: Number(transaction.amount) || 0,
+              name: value.name ?? "",
+              imageUrl: "", // ✅ Matches `Transaction` type
+              email: value.email ?? "",
+              timestamp: transaction.timestamp ?? "",
+              userType: value.userType === "customer" || value.userType === "supplier" ? value.userType : "customer",
+              transactionId: transaction.id ?? "",
+            };
+          })
+          : [],
       }));
 
 
@@ -205,63 +175,124 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
     fetchData()
     onRefresh()
   }
+
+  const saveEditedTransaction = async (data: Transaction) => {
+    setIsEditCustomer(false); // Closing edit modal
+
+    try {
+      const userId = auth().currentUser?.uid;
+      if (!userId) throw new Error("User is not authenticated");
+
+      const userRef = database().ref(`${userId}`);
+      const snapshot = await userRef
+        .orderByChild("phoneNumber")
+        .equalTo(customerData?.phoneNumber)
+        .once("value");
+
+      if (snapshot.exists()) {
+        const userKey = Object.keys(snapshot.val())[0]; // Get the first matching key
+        const userTransactionsRef = database().ref(`${userId}/${userKey}`);
+        let transactionsList: Transaction[] = transactions
+        let index = transactionsList.findIndex(t => t.transactionId === data.transactionId);
+        if (index !== -1) {
+          transactionsList[index] = { ...transactionsList[index], amount: data?.amount }; // Update the object
+        }
+
+        await userTransactionsRef.update({
+          transactions: transactionsList
+        }); // Using update instead of push
+
+        triggerSnackbar(t("data_updated")); // Updated success message
+        setTransactions([...transactionsList]); // Clear transactions if needed
+      }
+    } catch (error) {
+      console.error("Failed to save customer:", error);
+      triggerSnackbar(t("something_went_wrong"));
+    }
+  }
+
   const triggerSnackbar = (message: string = "") => {
     setSnackbarMessage(message);
     setTimeout(() => setSnackbarMessage(""), 2000); // Clear after 2 seconds
   };
 
-  const saveCustomerDetails = async(data:{ name: string; phone: string; email: string; address: string }) => {
-    setIsEditCustomer(!isEditCustomer)
-    if (![data?.name, data?.phone].every(Boolean)) {
+  const saveCustomerDetails = async (data: { name: string; phoneNumber: string; email: string; address: string }) => {
+    setIsEditCustomer(false); // Closing edit modal
+
+    console.log("Data:", data);
+
+    if (![data?.name, data?.phoneNumber].every(Boolean)) {
       triggerSnackbar(t("please_fill_name_phone"));
       return;
     }
-    
-    const phoneRegex = /^[0-9]{10}$/; // Adjust regex as needed (e.g., for country codes)
-    if (!phoneRegex.test(data?.phone)) {
+
+    const phoneRegex = /^[0-9]{10}$/; // Modify if needed for country codes
+    if (!phoneRegex.test(data?.phoneNumber)) {
       triggerSnackbar(t("invalid_phone_number"));
       return;
     }
-    
-    
+
     try {
       const userId = auth().currentUser?.uid;
       if (!userId) throw new Error("User is not authenticated");
-    
+
       const userRef = database().ref(`${userId}`);
-      
-      // Query for an existing user with the same phone number
-      const snapshot = await userRef.orderByChild("phoneNumber").equalTo(data?.phone).once("value");
-    
+      const snapshot = await userRef
+        .orderByChild("phoneNumber")
+        .equalTo(customerData?.phoneNumber)
+        .once("value");
+
       if (snapshot.exists()) {
-        // setCustomerExitData({ data?.name, data?.phoneNumber, email });
-        triggerSnackbar(t("phone_exist"));
-        return;
+        const timestamp = Date.now();
+        const userKey = Object.keys(snapshot.val())[0]; // Get the first matching key
+        const userTransactionsRef = database().ref(`${userId}/${userKey}`);
+
+        const updatedEntry = {
+          id: userId,
+          name: data.name,
+          email: data.email || "", // Default empty fields
+          phoneNumber: data.phoneNumber,
+          address: data.address || "",
+          updatedAt: timestamp
+        };
+
+        console.log("updatedEntry ", updatedEntry)
+
+        await userTransactionsRef.update(updatedEntry); // Using update instead of push
+        triggerSnackbar(t("data_updated")); // Updated success message
+
+        // setCustomer(updatedEntry);
+
+        // setTransactions([]); // Clear transactions if needed
+
+
+        const Entry: User = {
+          id: userId,
+          name: data.name,
+          email: data.email || "", // Default empty fields
+          phoneNumber: data.phoneNumber,
+          type: customer?.type || "receive", // Default to existing or a valid type
+          amount: customer?.amount || 0, // Default amount
+          timestamp: Date.now().toString(), // Convert timestamp to string
+          userType: customer?.userType || "customer", // Default userType
+          createdAt: customer?.createdAt || Date.now().toString(), // Keep original createdAt
+          updatedAt: Date.now().toString(), // Ensure updatedAt is a string
+          userId: userId,
+          transactions: customer?.transactions || [] // Preserve existing transactions
+        };
+
+        console.log("updatedEntry ", Entry);
+
+        setCustomer(Entry);
+        setTransactions(customer?.transactions); // Clear transactions if needed
+
       }
-    
-      // Add a new user entry
-      const newEntryRef = userRef.push();
-      const timestamp = Date.now();
-    
-      await newEntryRef.set({
-        id:userId,
-        name:data?.name,
-        email: data?.email || "", // Ensure empty fields don’t break the app
-        phoneNumber:data?.phone,
-        address: data?.address || ""
-      });
-    
-      triggerSnackbar(t("data_added"));
-      navigation.goBack();
     } catch (error) {
       console.error("Failed to save customer:", error);
       triggerSnackbar(t("something_went_wrong"));
-    } finally {
-
     }
-    
-    onRefresh()
-  }
+  };
+
 
   const handleSaveTransaction = async (input: string) => {
     try {
@@ -316,15 +347,12 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
 
       fetchList().then((data) => {
         let findData = data?.find(c => c.phoneNumber === customerData?.phoneNumber);
-        console.log("findData ", findData)
         setCustomer(findData || customerData);
         setTransactions(findData?.transactions || []);
       });
-      console.log("Transaction saved successfully");
     } catch (error) {
       console.error("Failed to save transaction:", error);
     }
-    console.log("Transaction Saved:", input);
   };
 
   const handleProfileEdit = () => {
@@ -332,7 +360,7 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
   }
 
   const handleReport = () => {
-    // generateAndSharePDF(`${customer?.name} Report`, settlementAmount, transactions, customer)
+    generateAndSharePDF(`${customer?.name} Report`, settlementAmount, transactions, customer)
   }
 
   const handleCall = () => {
@@ -373,7 +401,7 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
 
 
 
-  const renderItemList = ({ item }: { item: TransactionEntry }) => {
+  const renderItemList = ({ item }: { item: Transaction }) => {
     const isGave = item.type === 'send';
     const amountColor = isGave ? 'red' : 'green';
 
@@ -388,12 +416,12 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
     });
 
     // Handler for edit button
-    const handleEdit = () => {
+    const handleEdit = (item: Transaction) => {
+      setEditTransaction(item)
       // Logic for editing the transaction
-      setAlertVisible(!isAlertVisible)
-      setInputValue(item?.amount.toString())
-      onRefresh()
+      setIsEditTransaction(!isEditTransaction)
       // You can navigate to an edit screen or open a modal here
+
     };
 
 
@@ -411,15 +439,15 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
           >
             {isGave ? t('you_send') : t('you_got')} {t('amt')}: {item.amount}
           </Text>
-          <Text
+          {/* <Text
             style={[styles.transactionBalance, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 2 }]}
           >
             {t('bal')} {t('amt')} {settlementAmount}
-          </Text>
+          </Text> */}
         </View>
 
         {/* Edit Button with Text and Icon */}
-        <TouchableOpacity onPress={() => handleEdit()} style={styles.editButton}>
+        <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton}>
           <Icon name="edit" size={18} color="gray" />
           <Text style={styles.editButtonText}>{t("edit")}</Text>
         </TouchableOpacity>
@@ -440,141 +468,172 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
         phoneNumber={""}
       />
       {/* Top Header Section */}
-      <View style={{ paddingHorizontal: 12, flex: 1 }}>
-        <View style={styles.headerRow}>
-          <View style={styles.headerLeft}>
-            {/* Circular avatar with "P" */}
-            {/* <View style={styles.avatarContainer}>
+      {isLoading ? (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={themeProperties.textColor} />
+        </View>
+      ) : (
+        <View style={{ paddingHorizontal: 12, flex: 1 }}>
+          <View style={styles.headerRow}>
+            <View style={styles.headerLeft}>
+              {/* Circular avatar with "P" */}
+              {/* <View style={styles.avatarContainer}>
               <Text style={[styles.avatarText, { color: themeProperties.textColor }]}>P</Text>
             </View> */}
-            <View style={styles.imageContainer}>
-              <Text style={styles.initialText}>{customer?.name.charAt(0).toUpperCase()}</Text>
+              <View style={styles.imageContainer}>
+                <Text style={styles.initialText}>{customer?.name.charAt(0).toUpperCase()}</Text>
+              </View>
+              {/* Name + Customer label */}
+              <View style={styles.nameContainer}>
+                <Text
+                  style={[styles.customerName, { color: themeProperties.textColor, fontSize: themeProperties.textSize }]}
+                >
+                  {customer?.name}
+                </Text>
+                <Text
+                  style={[styles.customerLabel, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 4 }]}
+                >
+                  {customer?.phoneNumber}
+                </Text>
+                <Text
+                  style={[styles.customerLabel, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 4 }]}
+                >
+                  {customer?.userType === "customer" ? t('customer') : t('supplier')}
+                </Text>
+              </View>
             </View>
-            {/* Name + Customer label */}
-            <View style={styles.nameContainer}>
+            {/* "View settings" link */}
+            <TouchableOpacity onPress={() => { handleProfileEdit() }}>
               <Text
-                style={[styles.customerName, { color: themeProperties.textColor, fontSize: themeProperties.textSize }]}
+                style={[styles.settingsText, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 2 }]}
               >
-                {customer?.name}
+                {t('edit_profile')}
               </Text>
-              <Text
-                style={[styles.customerLabel, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 4 }]}
-              >
-                {customer?.phoneNumber}
-              </Text>
-              <Text
-                style={[styles.customerLabel, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 4 }]}
-              >
-                {customer?.userType === "customer" ? t('customer') : t('supplier')}
-              </Text>
-            </View>
+            </TouchableOpacity>
           </View>
-          {/* "View settings" link */}
-          <TouchableOpacity onPress={() => { handleProfileEdit() }}>
-            <Text
-              style={[styles.settingsText, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 2 }]}
-            >
-              {t('edit_profile')}
-            </Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* Big amount on top-right or below header */}
-        <View style={styles.topAmountRow}>
-          <Text
-            style={[styles.labelText, {
+          {/* Big amount on top-right or below header */}
+          <View style={[styles.topAmountRow, {
+            backgroundColor: themeProperties.backgroundColor,
+            borderColor: themeProperties.borderColor,
+          }]}>
+            <Text
+              style={[styles.labelText, {
+                color: themeProperties.textColor,
+                fontSize: themeProperties.textSize - 2
+              }]}
+            >
+              {t('settement')}
+            </Text>
+            <Text
+              style={[styles.amountText, { color: themeProperties.textColor, fontSize: themeProperties.textSize }]}
+            >
+              {settlementAmount}
+            </Text>
+          </View>
+
+          {/* Horizontal buttons: Report / Reminder / SMS */}
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.headerButton} onPress={() => {
+              handleReport()
+            }}>
+              <Text style={[styles.headerButtonText, { color: themeProperties.textColor }]}>
+                {t('report')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerButton} onPress={() => {
+              handleCall()
+            }}>
+              <Text style={[styles.headerButtonText, { color: themeProperties.textColor }]}>
+                {t('call')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerButton} onPress={() => {
+              handleSMS()
+            }}>
+              <Text style={[styles.headerButtonText, { color: themeProperties.textColor }]}>
+                {t('sms')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Razorpay banner (just a placeholder view / or Image) */}
+          {/* <View style={[styles.bannerContainer, {
+          backgroundColor: themeProperties.backgroundColor,
+          borderColor: themeProperties.borderColor,
+        }]}> */}
+
+          <View style={[styles.topAmountRow, {
+            backgroundColor: themeProperties.backgroundColor,
+            borderColor: themeProperties.borderColor,
+          }]}>
+            {/* In a real app, you might load an image or a WebView */}
+            <Text style={[styles.labelText, {
               color: themeProperties.textColor,
               fontSize: themeProperties.textSize - 2
             }]}
-          >
-            {t('settement')}
-          </Text>
-          <Text
-            style={[styles.amountText, { color: themeProperties.textColor, fontSize: themeProperties.textSize }]}
-          >
-            {settlementAmount}
-          </Text>
+            >{t('transcation_list')}</Text>
+          </View>
+
+
+
+          {/* Transaction list */}
+          <FlatList
+            data={transactions}
+            keyExtractor={(item, index) => item?.id ? String(item.id + index) : String(index)}
+            renderItem={({ item }) => renderItemList({ item })}
+            ItemSeparatorComponent={() => (
+              <View
+                style={{
+                  borderBottomWidth: 0.8,
+                  borderBottomColor: '#ddd',
+                  margin: 8,
+                }}
+              />
+            )}
+            ListEmptyComponent={
+              <View
+                style={{
+                  justifyContent: 'center',
+                  alignContent: 'center',
+                  flex: 1,
+                  alignItems: 'center',
+                }}
+              >
+                <Text>{t("no_data_found")}</Text>
+              </View>
+            }
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
+
+
+          {/* Bottom totals row */}
+          <View style={[styles.bottomRow, {
+            backgroundColor: themeProperties.backgroundColor,
+          }]}>
+            <TouchableOpacity onPress={() => {
+              setTransactionType("send")
+              setModalVisible(!modalVisible)
+            }} style={[styles.bottomButton, { backgroundColor: 'red' }]}>
+              <Text style={[styles.bottomButtonText, { fontSize: themeProperties.textSize - 2 }]}>
+                {t('you_send')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => {
+              setTransactionType("receive")
+              setModalVisible(!modalVisible)
+
+            }} style={[styles.bottomButton, { backgroundColor: 'green' }]}>
+              <Text style={[styles.bottomButtonText, { fontSize: themeProperties.textSize - 2 }]}>
+                {t('you_got')}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        {/* Horizontal buttons: Report / Reminder / SMS */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.headerButton} onPress={() => {
-            handleReport()
-          }}>
-            <Text style={[styles.headerButtonText, { color: themeProperties.textColor }]}>
-              {t('report')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton} onPress={() => {
-            handleCall()
-          }}>
-            <Text style={[styles.headerButtonText, { color: themeProperties.textColor }]}>
-              {t('call')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton} onPress={() => {
-            handleSMS()
-          }}>
-            <Text style={[styles.headerButtonText, { color: themeProperties.textColor }]}>
-              {t('sms')}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Razorpay banner (just a placeholder view / or Image) */}
-        <View style={styles.bannerContainer}>
-          {/* In a real app, you might load an image or a WebView */}
-          <Text style={{ color: themeProperties.textColor }}>{t('transcation_list')}</Text>
-        </View>
-
-
-
-        {/* Transaction list */}
-        <FlatList
-          data={transactions}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => renderItemList({ item })}
-          ItemSeparatorComponent={() => (
-            <View
-              style={{
-                borderBottomWidth: 0.8,
-                borderBottomColor: '#ddd',
-                margin: 8,
-              }}
-            />
-          )}
-          ListEmptyComponent={<View style={{
-            justifyContent: 'center',
-            alignContent: 'center',
-            flex: 1,
-            alignItems: 'center',
-          }}><Text>{t("no_data_found")}</Text></View>} // Display message if empty
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        />
-
-        {/* Bottom totals row */}
-        <View style={styles.bottomRow}>
-          <TouchableOpacity onPress={() => {
-            setTransactionType("send")
-            setModalVisible(!modalVisible)
-          }} style={[styles.bottomButton, { backgroundColor: 'red' }]}>
-            <Text style={[styles.bottomButtonText, { fontSize: themeProperties.textSize - 2 }]}>
-              {t('you_send')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {
-            setTransactionType("receive")
-            setModalVisible(!modalVisible)
-
-          }} style={[styles.bottomButton, { backgroundColor: 'green' }]}>
-            <Text style={[styles.bottomButtonText, { fontSize: themeProperties.textSize - 2 }]}>
-              {t('you_got')}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      )
+      }
 
       {/* Custom Alert */}
       {inputValue &&
@@ -593,7 +652,7 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
           customer_Data={customerData}
           title={t("change_customer_detail")}
           onClose={() => setIsEditCustomer(false)}
-          onSave={(data)=>{saveCustomerDetails(data)}}
+          onSave={(data) => { saveCustomerDetails(data) }}
         />
       }
 
@@ -613,6 +672,25 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
           }}
         />
       }
+
+
+      {editTransaction && isEditTransaction &&
+        <CustomAlertEditTransaction
+          visible={isEditTransaction}
+          title="Enter Transaction Amount"
+          inputValueData={editTransaction}
+          onClose={() => {
+            setIsEditTransaction(false)
+          }}
+
+          onSave={(data) => {
+            setIsEditTransaction(false)
+            saveEditedTransaction(data)
+          }}
+        />
+      }
+
+      {snackbarMessage ? <Snackbar message={snackbarMessage} /> : null}
 
     </SafeAreaView>
   );
@@ -637,7 +715,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 20,
   },
-
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   transactionDetails: {
     flex: 1,
   },
@@ -712,8 +794,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#f5f5f5',
     borderRadius: 10,
+    borderWidth: 0.5,
     paddingVertical: 15,
-    height: 50,
+    marginBottom: 10,
     marginHorizontal: 16,
   },
   labelText: {

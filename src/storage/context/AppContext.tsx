@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DEFAULTS } from "../../utils/constants";
 
 // Define types for the context values
 interface AppContextType {
@@ -7,6 +8,8 @@ interface AppContextType {
   toggleTheme: () => Promise<void>;
   language: string;
   changeLanguage: (lang: string) => Promise<void>;
+  changeBusinessName: (businessName: string) => Promise<void>;
+  business: string;
 }
 
 // Create AppContext with default values
@@ -19,15 +22,18 @@ interface AppProviderProps {
 export const AppProvider = ({ children }: AppProviderProps) => {
   const [theme, setTheme] = useState<string>("light");
   const [language, setLanguage] = useState<string>("en");
+  const [business, setBusiness] = useState<string>("")
 
   // Load theme and language from AsyncStorage (optional)
   useEffect(() => {
     const loadSettings = async () => {
-      const storedTheme = await AsyncStorage.getItem("theme");
-      const storedLanguage = await AsyncStorage.getItem("language");
+      const storedTheme = await AsyncStorage.getItem(DEFAULTS.LANGUAGE);
+      const storedLanguage = await AsyncStorage.getItem(DEFAULTS.APP_THEME);
+      const businessName = await AsyncStorage.getItem(DEFAULTS.BUSINESS_NAME);
 
       if (storedTheme) setTheme(storedTheme);
       if (storedLanguage) setLanguage(storedLanguage);
+      if (businessName) setBusiness(businessName)
     };
 
     loadSettings();
@@ -36,16 +42,21 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const toggleTheme = async () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    await AsyncStorage.setItem("theme", newTheme); // Save to AsyncStorage
+    await AsyncStorage.setItem(DEFAULTS.APP_THEME, newTheme); // Save to AsyncStorage
   };
 
   const changeLanguage = async (lang: string) => {
     setLanguage(lang);
-    await AsyncStorage.setItem("language", lang); // Save to AsyncStorage
+    await AsyncStorage.setItem(DEFAULTS.LANGUAGE, lang); // Save to AsyncStorage
   };
 
+  const changeBusinessName = async (businessName: string) => {
+    setBusiness(businessName)
+    await AsyncStorage.setItem(DEFAULTS.BUSINESS_NAME, businessName); // Save to AsyncStorage
+  }
+
   return (
-    <AppContext.Provider value={{ theme, toggleTheme, language, changeLanguage }}>
+    <AppContext.Provider value={{ theme, toggleTheme, language, changeLanguage, business, changeBusinessName }}>
       {children}
     </AppContext.Provider>
   );

@@ -116,12 +116,12 @@ const CustomerList: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
     const isDarkMode = theme === 'dark';
 
     const handleOnPressItem = () => {
-    
-        navigation.navigate(NAVIGATION.CUSTOMER_TRANSACTION_SCREEN, {
-          transction_1: item?.transactions,
-          customerData: customerData
-        })
-      
+
+      navigation.navigate(NAVIGATION.CUSTOMER_TRANSACTION_SCREEN, {
+        transction_1: item?.transactions,
+        customerData: customerData
+      })
+
     }
 
     return (
@@ -171,7 +171,7 @@ const CustomerList: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
     <View style={[styles.container, { backgroundColor: themeProperties.backgroundColor }]}>
       <FlatList
         data={customersTransation}
-        keyExtractor={(item) => item?.id?.toString() || item?.email}
+        keyExtractor={(item) => item?.userId}
         renderItem={renderCustomerItem}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
