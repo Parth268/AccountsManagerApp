@@ -169,5 +169,6 @@
   "supplier_address": "Supplier Address",
   "enter_supplier_address": "Enter Supplier Address",
   "show_address":"Show Address",
-  "close":"Close"
+  "close":"Close",
+  "enter_transaction_amount":"Enter Transaction Amount"
 }

@@ -45,10 +45,10 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
   const { business, changeBusinessName } = useApp()
 
   // Form state
-  const [name, setName] = useState("Parth");
-  const [email, setEmail] = useState("parth@gmail.com");
-  const [phoneNumber, setPhoneNumber] = useState("1234567890");
-  const [address, setAddress] = useState("At post karvad");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [address, setAddress] = useState("");
   const [businessName, setBusinessName] = useState(business)
   const [loading, setLoading] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
@@ -159,7 +159,7 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
       return;
     }
 
-    let id = btoa(`${name}${phoneNumber}`);
+    let id = btoa(`${phoneNumber}`);
 
     setLoading(true);
 

@@ -697,7 +697,7 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
       {
         <CustomAlertTransaction
           visible={modalVisible}
-          title="Enter Transaction Amount"
+          title={t("enter_transaction_amount")}
           inputValueData={transactionValue}
           onClose={() => {
             setTransactionValue("")
@@ -715,7 +715,7 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
       {editTransaction && isEditTransaction &&
         <CustomAlertEditTransaction
           visible={isEditTransaction}
-          title="Enter Transaction Amount"
+          title={t("enter_transaction_amount")}
           inputValueData={editTransaction}
           onClose={() => {
             setIsEditTransaction(false)

@@ -24,9 +24,9 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
   const { login } = useAuth();
   const { theme, themeProperties } = useAppTheme();
 
-  const [email, setEmail] = useState<string>("parth26.8patel@gmail.com");
-  const [password, setPassword] = useState<string>("123456");
-  const [confirmPassword, setConfirmPassword] = useState<string>("123456");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
