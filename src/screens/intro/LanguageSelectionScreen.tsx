@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DEFAULTS, NAVIGATION } from "../../utils/constants"; // Assuming you have a constants file for default values
-import { useTranslation } from "react-i18next";
 import { NavigationProp } from "@react-navigation/native"; // Import NavigationProp for type safety
 import { useLanguage } from "../../storage/context/LanguageContext";
 
