@@ -7,7 +7,7 @@ import WebViewScreen from "../screens/webview/WebView";
 import ChangeLanguage from "../screens/setting/ChangeLanguage";
 import ChangeThemeScreen from "../screens/setting/ChangeTheme";
 import ChangePassword from "../screens/setting/ChangePassword";
-import CustomerList from "../screens/customer/CustomerList";
+import CustomerList from "../screens/customer/Customer";
 import AddEditCustomer from '../screens/customer/AddEditCustomer';
 import Supplier from "../screens/supplier/Supplier";
 import ModeStatus from "../screens/setting/ModeStatus";

@@ -3,6 +3,7 @@ import type { Transaction } from './Transaction';
 export interface User {
     id: string;
     phoneNumber: string;
+    address:string,
     type: "receive" | "send";
     amount: number;
     name: string;

@@ -1,93 +1,45 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  RefreshControl,
-  Pressable,
-} from "react-native";
+import { View, Text, FlatList, StyleSheet, RefreshControl, Pressable } from "react-native";
 import { useAppTheme } from "../../storage/context/ThemeContext";
 import { useTranslation } from "react-i18next";
-import CustomAlertUser from "../../components/CustomAlertUser";
 import { NAVIGATION } from "../../utils/constants";
-
-interface Transaction {
-  id: string;
-  userId: string;
-  phoneNumber: string;
-  type: 'receive' | 'send';
-  amount: number;
-  name: string;
-  imageurl: string;
-  email: string;
-  timestamp: string;
-  userType: 'customer' | 'supplier';
-  transationId: string;
-}
+import { User } from "../types";
 
 interface Props {
-  transation: Transaction[];
+  user: User[];
   navigation: any;
+  onRefreshList: () => {}
 }
 
-interface Supplier {
-  userId: string;
-  name: string;
-  type: string;
-  phoneNumber: string;
-  email: string;
-}
 
-const Supplier: React.FC<Props> = ({ transation, navigation }: Props) => {
+const Supplier: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
+
   const { t } = useTranslation();
   const { theme, themeProperties } = useAppTheme();
-  const [suppliersTransation, setSuppliersTransation] = useState<Transaction[]>(transation);
+  const [supplierTransation, setSuppliersTransation] = useState<User[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [supplier, setSupplier] = useState<Supplier[]>()
-  const [alertVisible, setAlertVisible] = useState(false);
+  const [callAlertVisible, setCallAlertVisible] = useState(false);
 
 
   useEffect(() => {
     fetchSupplierData()
-  }, [])
+  }, [user])
 
   const fetchSupplierData = () => {
-    setSupplier([
-      {
-        userId: "2d4f5gt",
-        name: "John Doe",
-        type: "supplier",
-        phoneNumber: "123-456-7890",
-        email: "johndoe@example.com",
-      }
-    ])
+    setSuppliersTransation(user)
   }
 
-  const closeAlert = () => {
-    setAlertVisible(false);
-  };
-
-  const confirmAction = () => {
-    // Handle the confirm action
-    console.log("User confirmed the action!");
-    setAlertVisible(false);
-  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Simulate fetch action (replace with your data fetch logic)
-    fetchSupplierData()
+    onRefreshList()
     setRefreshing(false);
   }, []);
 
 
-  const handleCall = () => {
-    setAlertVisible(!alertVisible)
-  }
 
   // Render each supplier item
-  const renderSupplierItem = ({ item }: { item: Transaction }) => {
+  const renderSupplierItem = ({ item }: { item: User }) => {
     const transactionTimestamp = item?.timestamp
       ? new Date(item?.timestamp)
       : new Date();
@@ -99,15 +51,17 @@ const Supplier: React.FC<Props> = ({ transation, navigation }: Props) => {
     });
 
     // const supplierData
-    const supplierData = supplier?.find(c => c.userId === item?.userId);
+    const supplierData = supplierTransation?.find(c => c.userId === item?.userId);
 
 
     const isDarkMode = theme === 'dark';
 
     const handleOnPressItem = () => {
-      navigation.navigate(NAVIGATION.SUPPLIER_TRANSACTION_SCREEN,
-        { transction_1: item, supplierData: supplierData }
-      )
+
+      navigation.navigate(NAVIGATION.SUPPLIER_TRANSACTION_SCREEN, {
+        supplierData: supplierData
+      })
+
     }
 
     return (
@@ -122,7 +76,7 @@ const Supplier: React.FC<Props> = ({ transation, navigation }: Props) => {
 
             <View style={styles.supplierDetails}>
               <Pressable style={styles.detailItem}>
-                <Pressable onPress={handleCall}><Text style={[styles.icon, { color: isDarkMode ? '#00bfff' : '#007bff' }]}>📞</Text></Pressable>
+                <Pressable onPress={() => setCallAlertVisible(!callAlertVisible)}><Text style={[styles.icon, { color: isDarkMode ? '#00bfff' : '#007bff' }]}>📞</Text></Pressable>
                 <Text style={[styles.supplierPhone, { color: isDarkMode ? '#bbb' : '#666' }]}>{item?.phoneNumber}</Text>
               </Pressable>
             </View>
@@ -130,18 +84,19 @@ const Supplier: React.FC<Props> = ({ transation, navigation }: Props) => {
 
           <View style={{ flex: 1 }}>
             {/* Conditional background color */}
-            <View style={[styles.sendMoneyStatus, {
-              backgroundColor: item?.type === 'send' ? '#cb4750' : '#8BC34A'
-            }]} >
-              {
-                item?.type === 'send' ? (
-                  <Text style={styles.sendMoneyText}>{t("debit")}: {item?.amount}</Text>
-                ) : (
-                  <Text style={styles.sendMoneyText}>{t("credit")}: {item?.amount}</Text>
-                )
-              }
-            </View>
-
+            {item?.amount !== 0 &&
+              <View style={[styles.sendMoneyStatus, {
+                backgroundColor: item?.type === 'send' ? '#cb4750' : '#8BC34A'
+              }]} >
+                {
+                  item?.type === 'send' ? (
+                    <Text style={styles.sendMoneyText}>{t("debit")}: {item?.amount}</Text>
+                  ) : (
+                    <Text style={styles.sendMoneyText}>{t("credit")} {item?.amount}</Text>
+                  )
+                }
+              </View>
+            }
             {/* Timestamp */}
             <View style={styles.timestampContainer}>
               <Text style={[styles.timestampText, { color: isDarkMode ? '#bbb' : '#777' }]}>{formattedTimestamp}</Text>
@@ -154,32 +109,20 @@ const Supplier: React.FC<Props> = ({ transation, navigation }: Props) => {
 
   return (
     <View style={[styles.container, { backgroundColor: themeProperties.backgroundColor }]}>
+
       <FlatList
-        data={suppliersTransation}
-        keyExtractor={(item) => item?.email} // or item.name, if you prefer a unique identifier
+        data={supplierTransation}
+        keyExtractor={(item, index) => String(item?.userId + index)}
         renderItem={renderSupplierItem}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListEmptyComponent={<View style={{
+          justifyContent: 'center',
+          alignContent: 'center',
+          flex: 1,
+          alignItems: 'center',
+        }}><Text>{t("no_data_found")}</Text></View>} // Display message if empty
       />
-
-      <CustomAlertUser
-        visible={alertVisible}
-        title="Contact"
-        message={`Please select option for contact a  ${suppliersTransation[0].name}`}
-        data={`
-Transaction ID: ${suppliersTransation[0].transationId}
-Amount: ${suppliersTransation[0].amount}
-Type: ${suppliersTransation[0].type.charAt(0).toUpperCase() + suppliersTransation[0].type.slice(1)}
-Date Time: ${new Date(suppliersTransation[0].timestamp).toLocaleString()}
-`}
-        onClose={closeAlert}
-        onConfirm={confirmAction}
-        phoneNumber={suppliersTransation[0].phoneNumber} // Pass the phone number here
-        userName={suppliersTransation[0].name} // Pass the user's name here
-      />
-
 
 
     </View>

@@ -1,30 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  RefreshControl,
-  Pressable,
-} from "react-native";
+import { View, Text, FlatList, StyleSheet, RefreshControl, Pressable } from "react-native";
 import { useAppTheme } from "../../storage/context/ThemeContext";
 import { useTranslation } from "react-i18next";
-import CustomAlertUser from "../../components/CustomAlertUser";
 import { NAVIGATION } from "../../utils/constants";
-
-interface Transaction {
-  id: string;
-  userId: string;
-  phoneNumber: string;
-  type: 'receive' | 'send';
-  amount: number;
-  name: string;
-  imageurl: string;
-  email: string;
-  timestamp: string;
-  userType: 'customer' | 'supplier';
-  transationId: string;
-}
+import { User } from "../types";
 
 interface Props {
   user: User[];
@@ -32,39 +11,14 @@ interface Props {
   onRefreshList: () => {}
 }
 
-interface Customer {
-  userId: string;
-  name: string;
-  type: string;
-  phoneNumber: string;
-  email: string;
-}
 
+const Customer: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
 
-
-interface User {
-  id: string;
-  phoneNumber: string;
-  type: "receive" | "send";
-  amount: number;
-  name: string;
-  email: string;
-  timestamp: string;
-  userType: "customer" | "supplier";
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  transactions: Transaction[]; // Properly typed array of transactions
-}
-
-
-const CustomerList: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
   const { t } = useTranslation();
   const { theme, themeProperties } = useAppTheme();
   const [customersTransation, setCustomersTransation] = useState<User[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [customer, setCustomer] = useState<Customer[]>()
-  const [alertVisible, setAlertVisible] = useState(false);
+  const [callAlertVisible, setCallAlertVisible] = useState(false);
 
 
   useEffect(() => {
@@ -75,27 +29,14 @@ const CustomerList: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
     setCustomersTransation(user)
   }
 
-  const closeAlert = () => {
-    setAlertVisible(false);
-  };
-
-  const confirmAction = () => {
-    // Handle the confirm action
-    console.log("User confirmed the action!");
-    setAlertVisible(false);
-  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Simulate fetch action (replace with your data fetch logic)
     onRefreshList()
     setRefreshing(false);
   }, []);
 
 
-  const handleCall = () => {
-    setAlertVisible(!alertVisible)
-  }
 
   // Render each customer item
   const renderCustomerItem = ({ item }: { item: User }) => {
@@ -118,7 +59,6 @@ const CustomerList: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
     const handleOnPressItem = () => {
 
       navigation.navigate(NAVIGATION.CUSTOMER_TRANSACTION_SCREEN, {
-        transction_1: item?.transactions,
         customerData: customerData
       })
 
@@ -136,7 +76,7 @@ const CustomerList: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
 
             <View style={styles.customerDetails}>
               <Pressable style={styles.detailItem}>
-                <Pressable onPress={handleCall}><Text style={[styles.icon, { color: isDarkMode ? '#00bfff' : '#007bff' }]}>📞</Text></Pressable>
+                <Pressable onPress={() => setCallAlertVisible(!callAlertVisible)}><Text style={[styles.icon, { color: isDarkMode ? '#00bfff' : '#007bff' }]}>📞</Text></Pressable>
                 <Text style={[styles.customerPhone, { color: isDarkMode ? '#bbb' : '#666' }]}>{item?.phoneNumber}</Text>
               </Pressable>
             </View>
@@ -169,9 +109,10 @@ const CustomerList: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: themeProperties.backgroundColor }]}>
+
       <FlatList
         data={customersTransation}
-        keyExtractor={(item) => item?.userId}
+        keyExtractor={(item, index) => String(item?.userId + index)}
         renderItem={renderCustomerItem}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -182,23 +123,6 @@ const CustomerList: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
           alignItems: 'center',
         }}><Text>{t("no_data_found")}</Text></View>} // Display message if empty
       />
-
-
-      {/* <CustomAlertUser
-        visible={alertVisible}
-        title="Contact"
-        message={`Please select option for contact a  ${customersTransation?.name}`}
-        data={`
-Amount: ${customersTransation?.amount}
-Type: ${customersTransation?.type.charAt(0).toUpperCase() + customersTransation?.type.slice(1)}
-Date Time: ${new Date(customersTransation?.timestamp).toLocaleString()}
-`}
-        onClose={closeAlert}
-        onConfirm={confirmAction}
-        phoneNumber={customersTransation?.phoneNumber} // Pass the phone number here
-        userName={customersTransation?.name} // Pass the user's name here
-      /> */}
-
 
 
     </View>
@@ -299,4 +223,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomerList;
+export default Customer;

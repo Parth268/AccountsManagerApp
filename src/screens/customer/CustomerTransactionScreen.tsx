@@ -9,7 +9,8 @@ import {
   Linking,
   Alert,
   RefreshControl,
-  ActivityIndicator
+  ActivityIndicator,
+  Pressable
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../storage/context/ThemeContext';
@@ -25,6 +26,7 @@ import { User, Transaction } from '../types'
 import { Snackbar } from '../../components/Snackbar';
 import CustomAlertEditTransaction from '../../components/CustomAlertEditTranscation';
 import { RawTransaction } from '../types/RawTransaction';
+import AddressModal from '../../components/AddressModal';
 
 
 interface Props {
@@ -72,6 +74,8 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
   const [isEditTransaction, setIsEditTransaction] = useState<boolean>(false)
   const [editTransaction, setEditTransaction] = useState<Transaction>()
   const [isLoading, setIsLoading] = useState(false);
+  const [showAddress, setShowAddress] = useState(false)
+  const [addressData, setAddressData] = useState(customerData?.address)
 
   const fetchListData = async () => {
     setIsLoading(true)
@@ -80,6 +84,9 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
         let findData = data?.find(c => c.id === customerData?.id);
         if (findData) {
           setCustomer(findData);
+          if (findData?.address) {
+            setAddressData(findData?.address)
+          }
           setTransactions(findData?.transactions);
         }
       })
@@ -135,6 +142,7 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
         amount: Number(value.amount) || 0,
         name: value.name ?? "",
         email: value.email ?? "",
+        address: value.address ?? "",
         timestamp: value.timestamp ?? "",
         userType: value.userType === "customer" || value.userType === "supplier" ? value.userType : "customer",
         createdAt: value.createdAt ?? "",
@@ -271,6 +279,7 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
           name: data.name,
           email: data.email || "", // Default empty fields
           phoneNumber: data.phoneNumber,
+          address: data.address || "",
           type: customer?.type || "receive", // Default to existing or a valid type
           amount: customer?.amount || 0, // Default amount
           timestamp: Date.now().toString(), // Convert timestamp to string
@@ -282,6 +291,7 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
         };
 
         console.log("updatedEntry ", Entry);
+        setAddressData(data?.address)
 
         setCustomer(Entry);
         setTransactions(customer?.transactions); // Clear transactions if needed
@@ -348,6 +358,9 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
       fetchList().then((data) => {
         let findData = data?.find(c => c.phoneNumber === customerData?.phoneNumber);
         setCustomer(findData || customerData);
+        if (findData?.address) {
+          setAddressData(findData?.address)
+        }
         setTransactions(findData?.transactions || []);
       });
     } catch (error) {
@@ -486,20 +499,41 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
               {/* Name + Customer label */}
               <View style={styles.nameContainer}>
                 <Text
-                  style={[styles.customerName, { color: themeProperties.textColor, fontSize: themeProperties.textSize }]}
+                  style={[styles.customerName, {
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    color: themeProperties.textColor, fontSize: themeProperties.textSize
+                  }]}
                 >
                   {customer?.name}
+                  <Text
+                    style={[{
+                      color: themeProperties.textColor,
+                      fontSize: themeProperties.textSize - 6
+                    }]}
+                  >
+                    {customer?.userType === "customer" ? " (" + t('customer') + ")" : " (" + t('supplier') + ")"}
+                  </Text>
                 </Text>
                 <Text
                   style={[styles.customerLabel, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 4 }]}
                 >
                   {customer?.phoneNumber}
                 </Text>
-                <Text
-                  style={[styles.customerLabel, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 4 }]}
-                >
-                  {customer?.userType === "customer" ? t('customer') : t('supplier')}
-                </Text>
+                {addressData &&
+                  <Pressable onPress={() => {
+                    setShowAddress(!showAddress)
+                  }}>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        color: "#0e6ed3",
+                      }}
+                    >
+                      {t("show_address")}
+                    </Text>
+                  </Pressable>
+                }
               </View>
             </View>
             {/* "View settings" link */}
@@ -646,6 +680,10 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
         />
       }
 
+      {showAddress && addressData &&
+        <AddressModal onClose={() => { setShowAddress(false) }} showAddress={showAddress} address={addressData} />
+      }
+
       {customerData &&
         <CustomerEditModal
           visible={isEditCustomer}
@@ -754,7 +792,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   nameContainer: {
-    marginLeft: 12,
+    marginLeft: 2,
   },
   customerName: {
     fontWeight: '600',
@@ -783,6 +821,11 @@ const styles = StyleSheet.create({
   customerLabel: {
     fontWeight: '400',
     fontSize: 12,
+  },
+  addressLabel: {
+    fontWeight: '400',
+    fontSize: 10,
+    color: "blue"
   },
   settingsText: {
     textDecorationLine: 'underline',

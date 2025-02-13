@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -19,107 +19,67 @@ import { useAppTheme } from "../../storage/context/ThemeContext";
 import CustomAlert from "../../components/CustomAlert";
 import { Snackbar } from "../../components/Snackbar";
 import HorizontalLine from "../../components/HorizontalLine";
-import CustomerList from "../customer/CustomerList";
+import Customer from "../customer/Customer";
 const { width } = Dimensions.get("window");
 import database from "@react-native-firebase/database";
 import auth from "@react-native-firebase/auth";
 import { useFocusEffect } from '@react-navigation/native';
 import BusinessNameModal from "../../components/BusinessNameModal";
 import { useApp } from "../../storage/context/AppContext";
+import { User } from "../types";
+import Supplier from "../supplier/Supplier";
 
-interface DashboardProps {
+type DashboardProps = {
   navigation: any;
 }
 
-interface User {
-  id: string;
-  phoneNumber: string;
-  type: "receive" | "send";
-  amount: number;
-  name: string;
-  email: string;
-  timestamp: string;
-  userType: "customer" | "supplier";
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  transactions: Transaction[]; // Properly typed array of transactions
-}
-
-
-interface Transaction {
-  id: string;
-  userId: string;
-  phoneNumber: string;
-  type: 'receive' | 'send';
-  amount: number;
-  name: string;
-  imageurl: string;
-  email: string;
-  timestamp: string;
-  userType: 'customer' | 'supplier';
-  transationId: string;
-}
 
 const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
+
   const { t } = useTranslation();
-  const { themeProperties } = useAppTheme();
-  const { business, changeBusinessName } = useApp()
+  const { themeProperties, theme } = useAppTheme();
+  const { business, changeBusinessName } = useApp();
   const [activeTab, setActiveTab] = useState<string>("customer");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [businessName, setBusinessName] = useState(business)
+  const [businessName, setBusinessName] = useState(business);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
   const [isRefreshing, setRefreshing] = useState(false);
   const [userData, setUserData] = useState<User[]>([]);
-  const [isBusiness, setIsBusiness] = useState(false)
   const [isLoading, setIsLoading] = useState(false);
   const [isAlertVisible, setAlertVisible] = useState(false);
-  const { theme } = useAppTheme();
+  const [isBusiness, setIsBusiness] = useState(false)
 
-  const tabIndicator = new Animated.Value(activeTab === "customer" ? 0 : 1);
+  const tabIndicator = useRef(new Animated.Value(activeTab === "customer" ? 0 : 1)).current;
 
   const fetchData = useCallback(() => {
-    fetchPhoneNumber();
-    loadBusinessName()
-    fetchList().then((data) => {
-      setUserData(data);
-    });
-  }, []); // Ensures fetchData remains stable
+    (async () => {
+      await Promise.all([fetchPhoneNumber(), loadBusinessName(), fetchList()]);
+    })();
+  }, []);
 
-  useFocusEffect(fetchData); // Runs on screen focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [fetchData])
+  );
 
   useEffect(() => {
-    fetchData(); // Runs on component mount
+    fetchData();
   }, [fetchData]);
 
 
-
   const loadBusinessName = async () => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       const user = auth().currentUser;
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
+      if (!user) return;
 
-      const userId = user.uid;
-      const userRef = database().ref(userId);
-
-      const snapshot = await userRef.once("value");
-
-      if (!snapshot.exists()) {
-        setBusinessName("");
-        setIsBusiness(true);
+      const snapshot = await database().ref(user.uid).once("value");
+      const rawData = snapshot.val();
+      if (rawData?.businessName) {
+        setBusinessName(rawData?.businessName);
       } else {
-        const rawData = snapshot.val();
-
-        if (rawData.businessName) {
-          setBusinessName(rawData.businessName);
-        } else {
-          setBusinessName("");
-          setIsBusiness(true);
-        }
+        setIsBusiness(true)
       }
     } catch (error) {
       console.error("Error fetching business name:", error);
@@ -128,34 +88,25 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
     }
   };
 
-  const fetchList = async (): Promise<User[]> => {
-    setIsLoading(true);
-
+  const fetchList = async (): Promise<void> => {
     try {
+      setIsLoading(true);
       const user = auth().currentUser;
-      if (!user) {
-        return [];
-      }
+      if (!user) return;
 
-      const userId = user.uid;
-      const userRef = database().ref(userId);
-      const snapshot = await userRef.once("value");
+      const snapshot = await database().ref(user.uid).once("value");
+      if (!snapshot.exists()) return;
 
-      if (!snapshot.exists()) {
-        console.log("No data available");
-        return [];
-      }
-
-      const rawData = snapshot.val() ?? {};
-      const users: User[] = Object.entries(rawData)
+      const users = Object.entries(snapshot.val() || {})
         .map(([key, value]) => {
-          const user = value as any; // Explicitly assert type
+          const user = value as any;
           return {
             id: user.id ?? "",
             phoneNumber: user.phoneNumber ?? "",
             type: ["receive", "send"].includes(user.type) ? user.type : "receive",
             amount: Number(user.amount) || 0,
             name: user.name ?? "",
+            address: user.address ?? "",
             email: user.email ?? "",
             timestamp: user.timestamp ?? "",
             createdAt: user.createdAt ?? "",
@@ -167,50 +118,37 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
         })
         .filter(user => user.id && user.name);
 
-      return users;
+      setUserData(users);
     } catch (error) {
-      console.error("Error fetching list:", (error as Error).message);
-      return [];
+      console.error("Error fetching list:", error);
     } finally {
       setIsLoading(false);
     }
   };
-
-
 
   const handleBusiness = async (data: string) => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       const userId = auth().currentUser?.uid;
-      if (!userId) {
-        triggerSnackbar(t("authentication_failed"));
-        return;
-      }
+      if (!userId) return triggerSnackbar(t("authentication_failed"));
 
-      const userRef = database().ref(userId);
+      await database().ref(userId).set({ businessName: data, userId });
 
-      // Save business name
-      await userRef.set({ businessName: data, userId });
-
-      // Success actions
-      triggerSnackbar(t("data_added"));
       setBusinessName(data);
       changeBusinessName(data);
+      triggerSnackbar(t("data_added"));
     } catch (error) {
       console.error("Failed to save business name:", error);
-      triggerSnackbar(t("something_went_wrong"));
       setBusinessName("");
+      triggerSnackbar(t("something_went_wrong"));
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const fetchPhoneNumber = async () => {
     try {
-      const storedNumber = await AsyncStorage.getItem(
-        STORAGE_KEYS.USER_EMAIL
-      );
+      const storedNumber = await AsyncStorage.getItem(STORAGE_KEYS.USER_EMAIL);
       setPhoneNumber(storedNumber || "Not Available");
     } catch (error) {
       console.error("Failed to load phone number:", error);
@@ -230,31 +168,33 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
     outputRange: [0, width / 2],
   });
 
-  const hideAlert = () => setAlertVisible(false);
-
   const triggerSnackbar = (message: string) => {
     setSnackbarMessage(message);
     setTimeout(() => setSnackbarMessage(""), 2000);
   };
 
   const handlePress = () => {
-    if (activeTab === "supplier") {
-      navigation.navigate(NAVIGATION.ADD_EDIT_SUPPLIER);
+    if (businessName) {
+      navigation.navigate(
+        activeTab === "supplier" ? NAVIGATION.ADD_EDIT_SUPPLIER : NAVIGATION.ADD_EDIT_CUSTOMER,
+        { businessName }
+      );
     } else {
-      navigation.navigate(NAVIGATION.ADD_EDIT_CUSTOMER, { businessName: businessName });
+      setIsBusiness(true)
     }
-  }
+  };
 
   const logout = () => {
-    hideAlert();
+    setAlertVisible(false);
     triggerSnackbar(t("logout_success"));
     navigation.navigate(NAVIGATION.LOGIN);
   };
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    fetchPhoneNumber().finally(() => setRefreshing(false));
-  }, []);
+    await fetchData();
+    setRefreshing(false);
+  };
 
   return (
     <View
@@ -269,24 +209,27 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
       />
 
       <View style={styles.headercontainer}>
-        <Pressable onPress={() => { setIsBusiness(!isBusiness) }}>
-          <View style={{
-            flexDirection: 'row',
-          
-          }}>
-            <Text style={styles.businessName}>{businessName}</Text>
+        {businessName &&
+          <Pressable onPress={() => { setIsBusiness(!isBusiness) }}>
             <View style={{
               flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginLeft: 5,
-              marginTop: 2,
+
             }}>
-              <AntDesign name="down" size={16} color={themeProperties.textColor} />
+              <Text style={styles.businessName}>{businessName}</Text>
+              <View style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginLeft: 5,
+                marginTop: 2,
+              }}>
+                <AntDesign name="down" size={16} color={themeProperties.textColor} />
+              </View>
             </View>
-          </View>
-          {phoneNumber && <Text style={styles.ownerName}>{phoneNumber}</Text>}
-        </Pressable>
+
+            {phoneNumber && <Text style={styles.ownerName}>{phoneNumber}</Text>}
+          </Pressable>
+        }
 
         <TouchableOpacity
           style={styles.settingsIcon}
@@ -339,17 +282,19 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
 
       <HorizontalLine />
 
-      {isLoading ? (
+      {isLoading || isRefreshing ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={themeProperties.textColor} />
         </View>
       ) : (
         activeTab === "customer" ? (
-          <CustomerList user={Array.isArray(userData) ? userData : [userData]}
-            onRefreshList={fetchList}
+          <Customer user={Array.isArray(userData) ? userData : [userData]}
+            onRefreshList={() => onRefresh}
             navigation={navigation} />
         ) : activeTab === "supplier" ? (
-          <></>
+          <Supplier user={Array.isArray(userData) ? userData : [userData]}
+            onRefreshList={() => onRefresh}
+            navigation={navigation} />
         ) : null
       )}
 
@@ -361,7 +306,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
         visible={isAlertVisible}
         title={t("logout_confirmation")}
         message={t("logout_message")}
-        onClose={hideAlert}
+        onClose={() => { setAlertVisible(false) }}
         onConfirm={logout}
       />
 
