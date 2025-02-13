@@ -16,6 +16,7 @@ import { NAVIGATION, STORAGE_KEYS } from "../../utils/constants";
 import { useAuth } from "../../storage/context/AuthContext";
 import { Snackbar } from "../../components/Snackbar";
 import { useAppTheme } from "../../storage/context/ThemeContext";
+import { useApp } from "../../storage/context/AppContext";
 
 interface LoginProps {
   navigation: NavigationProp<any>;
@@ -25,9 +26,10 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
   const { t } = useTranslation();
   const { login } = useAuth();
   const { theme, themeProperties } = useAppTheme();
+  const { business, changeBusinessName } = useApp();
 
   const [email, setEmail] = useState<string>("parth26.8patel@gmail.com");
-  const [password, setPassword] = useState<string>("1234567890Q");
+  const [password, setPassword] = useState<string>("123456");
   const [loading, setLoading] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 

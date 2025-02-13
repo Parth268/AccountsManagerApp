@@ -251,7 +251,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
         >
           <Text
             style={[
-              styles.tabText,
+              styles.tabText,{color:themeProperties.textColor},
               activeTab === "customer" && styles.activeTabText,
             ]}
           >
@@ -265,7 +265,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
         >
           <Text
             style={[
-              styles.tabText,
+              styles.tabText,{color:themeProperties.textColor},
               activeTab === "supplier" && styles.activeTabText,
             ]}
           >

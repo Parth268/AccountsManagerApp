@@ -54,7 +54,9 @@ const CustomAlertTransaction: React.FC<CustomAlertTransactionProps> = ({
                             <Text style={styles.buttonText}>{t("cancel")}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={() => {
-                            onSave(inputValue)
+                            if (inputValue) {
+                                onSave(inputValue)
+                            }
                             onClose()
                         }}>
                             <Text style={styles.buttonText}>{t("save")}</Text>

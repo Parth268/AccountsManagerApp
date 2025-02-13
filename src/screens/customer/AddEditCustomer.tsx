@@ -20,6 +20,7 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { NAVIGATION } from "../../utils/constants";
 import BusinessNameModal from "../../components/BusinessNameModal";
 import { useApp } from "../../storage/context/AppContext";
+import { Transaction, User } from "../types";
 
 
 interface AddEditCustomerProps {
@@ -34,11 +35,7 @@ interface AddEditCustomerProps {
   navigation: any;
   route: any;
 }
-interface User {
-  name: string,
-  phoneNumber: string
-  email: string
-}
+
 
 
 
@@ -145,18 +142,10 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
   };
 
   const handleExistUser = () => {
-    navigation.navigate(NAVIGATION.CUSTOMER_TRANSACTION_SCREEN, {
-      user: {
-        name,
-        email,
-        phoneNumber,
-        businessName,
-        address,
-        amount: "",
-        type: "",
-        userType: "customer"
-      }
-    })
+    navigation.navigate(NAVIGATION.CUSTOMER_TRANSACTION_SCREEN,
+      {
+        customerData: customerExistData
+      })
   }
 
   const handleSubmit = async () => {
@@ -185,12 +174,35 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
       const snapshot = await userRef.orderByChild("phoneNumber").equalTo(phoneNumber).once("value");
 
       if (snapshot.exists()) {
-        setCustomerExitData({
-          name: name,
-          phoneNumber: phoneNumber,
-          email: email
-        })
-        triggerSnackbar(t("phone_exist"))
+
+        const rawData: Record<string, any> = snapshot.val();
+
+        if (!rawData) {
+
+        } else {
+
+          const key = Object.keys(rawData)[0]; // Assuming there's only one user
+          const value = rawData[key]; // Extracting user object
+
+          const user: User = {
+            id: value.id ?? "",
+            phoneNumber: value.phoneNumber ?? "",
+            type: value.type === "receive" || value.type === "send" ? value.type : "receive",
+            amount: Number(value.amount) || 0,
+            name: value.name ?? "",
+            email: value.email ?? "",
+            address: value.address ?? "",
+            timestamp: value.timestamp ?? "",
+            userType: value.userType === "customer" || value.userType === "supplier" ? value.userType : "customer",
+            createdAt: value.createdAt ?? "",
+            updatedAt: value.updatedAt ?? "",
+            userId: key,
+            transactions: [],
+          };
+
+          setCustomerExitData(user)
+          triggerSnackbar(t("phone_exist"))
+        }
         return; // Exit function if phone number is already in the database
       }
 
@@ -236,10 +248,10 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
         phoneNumber={""}
       />
       <View style={{ padding: 16, flex: 1 }}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("customer_phone")}</Text>
+        <View style={[styles.inputContainer,{backgroundColor:themeProperties.backgroundColor}]}>
+          <Text style={[styles.label,{color:themeProperties.textColor}]}>{t("customer_phone")}</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input,{color:themeProperties.textColor}]}
             placeholder={t("enter_customer_phone")}
             value={phoneNumber}
             onChangeText={
@@ -252,28 +264,28 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("customer_name")}</Text>
-          <TextInput style={styles.input} placeholder={t("enter_customer_name")}
+        <View style={[styles.inputContainer,{backgroundColor:themeProperties.backgroundColor}]}>
+        <Text style={[styles.label,{color:themeProperties.textColor}]}>{t("customer_name")}</Text>
+          <TextInput             style={[styles.input,{color:themeProperties.textColor}]} placeholder={t("enter_customer_name")}
             value={name} onChangeText={(name) => {
               setName(name);
               setCustomerExitData(null)
             }} />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("customer_email")}</Text>
-          <TextInput style={styles.input} placeholder={t("enter_customer_email")} value={email}
+        <View style={[styles.inputContainer,{backgroundColor:themeProperties.backgroundColor}]}>
+          <Text style={[styles.label,{color:themeProperties.textColor}]}>{t("customer_email")}</Text>
+          <TextInput             style={[styles.input,{color:themeProperties.textColor}]} placeholder={t("enter_customer_email")} value={email}
             onChangeText={(email) => {
               setEmail(email)
               setCustomerExitData(null)
             }} />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("customer_address")}</Text>
+        <View style={[styles.inputContainer,{backgroundColor:themeProperties.backgroundColor}]}>
+          <Text style={[styles.label,{color:themeProperties.textColor}]}>{t("customer_address")}</Text>
           <TextInput
-            style={[styles.input, styles.addressInput]}
+            style={[styles.input, styles.addressInput,{color:themeProperties.textColor}]}
             placeholder={t("enter_customer_address")}
             value={address}
             onChangeText={(address) => {
@@ -299,18 +311,22 @@ const AddEditCustomer: React.FC<AddEditCustomerProps> = ({ route, navigation }) 
         </TouchableOpacity>
 
         {customerExistData &&
-          <View style={styles.card}>
-            <View style={styles.textContainer}>
-              <Text style={styles.name}>{t("user_exist")}</Text>
+          <Pressable onPress={handleExistUser}>
 
-              <Text style={styles.name}>{customerExistData?.name}</Text>
-              <Text style={styles.info}>{customerExistData?.phoneNumber}</Text>
-              <Text style={styles.info}>{customerExistData?.email}</Text>
+            <View style={[styles.card, { backgroundColor: themeProperties.backgroundColor }]}>
+              <View style={[styles.textContainer, { backgroundColor: themeProperties.backgroundColor }]}>
+                <Text style={[styles.name, { color: themeProperties.textColor }]}>{t("user_exist")}</Text>
+
+                <Text style={[styles.name, { color: themeProperties.textColor }]}>{customerExistData?.name}</Text>
+                <Text style={[styles.info, { color: themeProperties.textColor }]}>{customerExistData?.phoneNumber}</Text>
+                <Text style={[styles.info, { color: themeProperties.textColor }]}>{customerExistData?.email}</Text>
+              </View>
+              <MaterialIcons name="keyboard-arrow-right" size={24} color={
+                themeProperties.textColor
+              } />
             </View>
-            <Pressable onPress={handleExistUser}>
-              <MaterialIcons name="keyboard-arrow-right" size={24} color="black" />
-            </Pressable>
-          </View>
+          </Pressable>
+
         }
       </View>
       {/* {loading && <ActivityIndicator size={"large"} />} */}
@@ -366,7 +382,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
     padding: 20,
-    margin: 10,
+    marginVertical: 10,
     borderRadius: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

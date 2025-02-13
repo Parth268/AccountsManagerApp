@@ -25,8 +25,8 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
   const { theme, themeProperties } = useAppTheme();
 
   const [email, setEmail] = useState<string>("parth26.8patel@gmail.com");
-  const [password, setPassword] = useState<string>("1234567890Q");
-  const [confirmPassword, setConfirmPassword] = useState<string>("1234567890Q");
+  const [password, setPassword] = useState<string>("123456");
+  const [confirmPassword, setConfirmPassword] = useState<string>("123456");
   const [loading, setLoading] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
@@ -58,8 +58,9 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
 
         setTimeout(() => {
           setLoading(false);
-          login(JSON.stringify(userCredential));
-        }, 500);
+          handleLoginNavigation()
+          // login(JSON.stringify(userCredential));
+        }, 200);
       }
     } catch (error) {
       setLoading(false);

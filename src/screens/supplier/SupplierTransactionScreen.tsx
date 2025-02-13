@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  Pressable,
   FlatList,
   Linking,
   Alert,
@@ -24,6 +25,7 @@ import CustomAlertTransaction from '../../components/CustomAlertTranscation';
 import { User, Transaction } from '../types'
 import { Snackbar } from '../../components/Snackbar';
 import CustomAlertEditTransaction from '../../components/CustomAlertEditTranscation';
+import AddressModal from '../../components/AddressModal';
 
 
 interface Props {
@@ -71,6 +73,8 @@ const SupplierTransactionScreen = ({ route, navigation }: Props) => {
   const [isEditTransaction, setIsEditTransaction] = useState<boolean>(false)
   const [editTransaction, setEditTransaction] = useState<Transaction>()
   const [isLoading, setIsLoading] = useState(false);
+  const [showAddress, setShowAddress] = useState(false)
+  const [addressData, setAddressData] = useState(supplierData?.address)
 
 
   const fetchListData = async () => {
@@ -80,6 +84,9 @@ const SupplierTransactionScreen = ({ route, navigation }: Props) => {
         let findData = data?.find(c => c.id === supplierData?.id);
         if (findData) {
           setSupplier(findData);
+          if (findData?.address) {
+            setAddressData(findData?.address)
+          }
           setTransactions(findData?.transactions);
         }
       })
@@ -144,7 +151,7 @@ const SupplierTransactionScreen = ({ route, navigation }: Props) => {
         userId: key,
         transactions: value.transactions
           ? Object.entries(value.transactions).map(([txKey, tx]) => {
-            const transaction = tx as Transaction; 
+            const transaction = tx as Transaction;
             return {
               id: key, // User ID
               userId: key,
@@ -152,7 +159,7 @@ const SupplierTransactionScreen = ({ route, navigation }: Props) => {
               type: transaction.type === "receive" || transaction.type === "send" ? transaction.type : "unknown",
               amount: Number(transaction.amount) || 0,
               name: value.name ?? "",
-              imageUrl: "", 
+              imageUrl: "",
               email: value.email ?? "",
               timestamp: transaction.timestamp ?? "",
               userType: value.userType === "supplier" || value.userType === "supplier" ? value.userType : "customer",
@@ -285,7 +292,9 @@ const SupplierTransactionScreen = ({ route, navigation }: Props) => {
         };
 
         console.log("updatedEntry ", Entry);
-
+        if (data?.address) {
+          setAddressData(data?.address)
+        }
         setSupplier(Entry);
         setTransactions(supplier?.transactions); // Clear transactions if needed
 
@@ -351,6 +360,9 @@ const SupplierTransactionScreen = ({ route, navigation }: Props) => {
       fetchList().then((data) => {
         let findData = data?.find(c => c.phoneNumber === supplierData?.phoneNumber);
         setSupplier(findData || supplierData);
+        if (findData?.address) {
+          setAddressData(findData?.address)
+        }
         setTransactions(findData?.transactions || []);
       });
     } catch (error) {
@@ -481,28 +493,49 @@ const SupplierTransactionScreen = ({ route, navigation }: Props) => {
             <View style={styles.headerLeft}>
               {/* Circular avatar with "P" */}
               {/* <View style={styles.avatarContainer}>
-              <Text style={[styles.avatarText, { color: themeProperties.textColor }]}>P</Text>
-            </View> */}
+                     <Text style={[styles.avatarText, { color: themeProperties.textColor }]}>P</Text>
+                   </View> */}
               <View style={styles.imageContainer}>
                 <Text style={styles.initialText}>{supplier?.name.charAt(0).toUpperCase()}</Text>
               </View>
               {/* Name + Customer label */}
               <View style={styles.nameContainer}>
                 <Text
-                  style={[styles.supplierName, { color: themeProperties.textColor, fontSize: themeProperties.textSize }]}
+                  style={[styles.customerName, {
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    color: themeProperties.textColor, fontSize: themeProperties.textSize
+                  }]}
                 >
                   {supplier?.name}
+                  <Text
+                    style={[{
+                      color: themeProperties.textColor,
+                      fontSize: themeProperties.textSize - 6
+                    }]}
+                  >
+                    {supplier?.userType === "customer" ? " (" + t('customer') + ")" : " (" + t('supplier') + ")"}
+                  </Text>
                 </Text>
                 <Text
-                  style={[styles.supplierLabel, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 4 }]}
+                  style={[styles.customerLabel, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 4 }]}
                 >
                   {supplier?.phoneNumber}
                 </Text>
-                <Text
-                  style={[styles.supplierLabel, { color: themeProperties.textColor, fontSize: themeProperties.textSize - 4 }]}
-                >
-                  {supplier?.userType === "supplier" ? t('supplier') : t('customer')}
-                </Text>
+                {addressData &&
+                  <Pressable onPress={() => {
+                    setShowAddress(!showAddress)
+                  }}>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        color: "#0e6ed3",
+                      }}
+                    >
+                      {t("show_address")}
+                    </Text>
+                  </Pressable>
+                }
               </View>
             </View>
             {/* "View settings" link */}
@@ -562,9 +595,9 @@ const SupplierTransactionScreen = ({ route, navigation }: Props) => {
 
           {/* Razorpay banner (just a placeholder view / or Image) */}
           {/* <View style={[styles.bannerContainer, {
-          backgroundColor: themeProperties.backgroundColor,
-          borderColor: themeProperties.borderColor,
-        }]}> */}
+                 backgroundColor: themeProperties.backgroundColor,
+                 borderColor: themeProperties.borderColor,
+               }]}> */}
 
           <View style={[styles.topAmountRow, {
             backgroundColor: themeProperties.backgroundColor,
@@ -637,6 +670,12 @@ const SupplierTransactionScreen = ({ route, navigation }: Props) => {
         </View>
       )
       }
+
+
+      {showAddress && addressData &&
+        <AddressModal onClose={() => { setShowAddress(false) }} showAddress={showAddress} address={addressData} />
+      }
+
 
       {/* Custom Alert */}
       {inputValue &&
@@ -814,6 +853,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginVertical: 12,
+  },
+  customerName: {
+    fontWeight: '600',
+    fontSize: 20,
+  },
+  customerInfo: {
+    justifyContent: 'center',
+    flex: 1,
+  },
+  customerLabel: {
+    fontWeight: '400',
+    fontSize: 12,
   },
   headerButton: {
     paddingVertical: 8,

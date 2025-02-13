@@ -131,7 +131,7 @@ const AddEditSupplier: React.FC<AddEditSupplierProps> = ({ route, navigation }) 
     setTimeout(() => setSnackbarMessage(""), 2000); // Clear after 2 seconds
   };
 
- 
+
 
   const handleExistUser = () => {
     navigation.navigate(NAVIGATION.SUPPLIER_TRANSACTION_SCREEN, {
@@ -226,9 +226,9 @@ const AddEditSupplier: React.FC<AddEditSupplierProps> = ({ route, navigation }) 
       />
       <View style={{ padding: 16, flex: 1 }}>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("supplier_phone")}</Text>
+          <Text style={[styles.label, { color: themeProperties.textColor }]}>{t("supplier_phone")}</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: themeProperties.textColor }]}
             placeholder={t("enter_supplier_phone")}
             value={phoneNumber}
             onChangeText={
@@ -242,8 +242,8 @@ const AddEditSupplier: React.FC<AddEditSupplierProps> = ({ route, navigation }) 
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("supplier_name")}</Text>
-          <TextInput style={styles.input} placeholder={t("enter_supplier_name")}
+          <Text style={[styles.label, { color: themeProperties.textColor }]}>{t("supplier_name")}</Text>
+          <TextInput style={[styles.input, { color: themeProperties.textColor }]} placeholder={t("enter_supplier_name")}
             value={name} onChangeText={(name) => {
               setName(name);
               setSupplierExitData(null)
@@ -251,8 +251,8 @@ const AddEditSupplier: React.FC<AddEditSupplierProps> = ({ route, navigation }) 
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("supplier_email")}</Text>
-          <TextInput style={styles.input} placeholder={t("enter_supplier_email")} value={email}
+          <Text style={[styles.label, { color: themeProperties.textColor }]}>{t("supplier_email")}</Text>
+          <TextInput style={[styles.input, { color: themeProperties.textColor }]} placeholder={t("enter_supplier_email")} value={email}
             onChangeText={(email) => {
               setEmail(email)
               setSupplierExitData(null)
@@ -260,9 +260,9 @@ const AddEditSupplier: React.FC<AddEditSupplierProps> = ({ route, navigation }) 
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>{t("supplier_address")}</Text>
+          <Text style={[styles.label, { color: themeProperties.textColor }]}>{t("supplier_address")}</Text>
           <TextInput
-            style={[styles.input, styles.addressInput]}
+            style={[styles.input, styles.addressInput, { color: themeProperties.textColor }]}
             placeholder={t("enter_supplier_address")}
             value={address}
             onChangeText={(address) => {

@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem(DEFAULTS.USER_DATA_ID);
+      await AsyncStorage.clear()
       setIsLoggedIn(false);
       setError(null); // Clear any previous errors
     } catch (error) {

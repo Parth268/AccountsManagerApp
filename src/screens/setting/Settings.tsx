@@ -17,29 +17,20 @@ import { DEFAULTS, NAVIGATION } from "../../utils/constants";
 import { useLanguage } from "../../storage/context/LanguageContext";
 import CustomAlert from "../../components/CustomAlert";
 import { Snackbar } from "../../components/Snackbar";
+import { useApp } from "../../storage/context/AppContext";
 
 interface SettingsProps {
   navigation: any;
 }
 
-interface LanguageType {
-  id: string;
-  name: string;
-  symbol: string;
-  code: string;
-  bgColor: string;
-  symbolColor: string;
-}
 
-interface LanguageContextType {
-  language: LanguageType;
-  changeLanguage: (lng: string) => Promise<void>;
-}
 
 const Settings: React.FC<SettingsProps> = ({ navigation }) => {
   const { t } = useTranslation();
   const { logout } = useAuth();
   const { language } = useLanguage();
+    const { business, changeBusinessName } = useApp();
+  
   const { theme, toggleTheme, toggleThemeStatus, themeProperties, themeStatus } = useAppTheme();
   const [isAlertVisible, setAlertVisible] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
@@ -56,6 +47,7 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
 
   const logoutApp = () => {
     hideAlert();
+    changeBusinessName("")
     logout();
   };
 
@@ -70,6 +62,10 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
   const handleNavigation = (url: string = "") => {
     navigation.navigate(NAVIGATION.WEBVIEW, { url });
   };
+
+  const handleOnchangePassword = () => {
+    navigation.navigate(NAVIGATION.CHANGE_PASSWORD);
+  }
 
   const handleOnNotificationReset = () => {
     PushNotification.cancelAllLocalNotifications();
@@ -93,14 +89,14 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
           {t("accessibility")}
         </Text>
 
-        <Pressable style={styles.item}
+        {/* <Pressable style={styles.item}
                   onPress={() => navigation.navigate(NAVIGATION.CHANGE_TEXT_SIZE)}>
           <Icon name="format-size" size={24} color={themeProperties.textColor} style={styles.icon} />
           <Text style={[styles.itemText, { color: themeProperties.textColor }]}>{t("increase_text_size")}</Text>
           <>
             <Icon name="arrow-forward" size={24} color={iconColor} />
           </>
-        </Pressable>
+        </Pressable> */}
 
         <Pressable style={styles.item}
           onPress={() => navigation.navigate(NAVIGATION.CHANGE_LANGUAGE)}>
@@ -116,6 +112,13 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
           <Icon name="notifications-none" size={24} color={themeProperties.textColor} style={styles.icon} />
           <Text style={[styles.itemText, { color: themeProperties.textColor }]}>
             {t("notifications_reset")}
+          </Text>
+        </Pressable>
+
+        <Pressable style={styles.item} onPress={handleOnchangePassword}>
+          <Icon name="password" size={24} color={themeProperties.textColor} style={styles.icon} />
+          <Text style={[styles.itemText, { color: themeProperties.textColor }]}>
+            {t("change_password")}
           </Text>
         </Pressable>
 
