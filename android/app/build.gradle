@@ -103,12 +103,17 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
+            minifyEnabled true
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
 }
+
+project.ext.react = [
+    enableHermes: true  // Set to true to enable Hermes
+]
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin

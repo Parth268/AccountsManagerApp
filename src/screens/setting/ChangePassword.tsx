@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { NavigationProp } from "@react-navigation/native";
 import { Snackbar } from "../../components/Snackbar";
 import { useAppTheme } from "../../storage/context/ThemeContext";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface ChangePasswordProps {
   navigation: NavigationProp<any>;
@@ -26,6 +27,7 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [secureText, setSecureText] = useState(true);
 
   const triggerSnackbar = (message: string = "") => {
     setSnackbarMessage(message);
@@ -125,6 +127,24 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ navigation }) => {
       fontSize: 16,
       fontWeight: "bold",
     },
+    passwordContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      width: "90%",
+      height: 50,
+      backgroundColor: "#FFFFFF",
+      borderRadius: 15,
+      paddingHorizontal: 15,
+      fontSize: 16,
+      marginTop: 20,
+      borderWidth: 1,
+      borderColor: "#DDDDDD",
+    },
+    passwordInput: {
+      flex: 1,
+      fontSize: 16,
+      color: "#000000",
+    },
   });
 
   return (
@@ -138,27 +158,40 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ navigation }) => {
       <TextInput
         style={dynamicStyles.input}
         placeholder={t("current_password_placeholder")}
-        secureTextEntry
+        
         value={currentPassword}
         onChangeText={(text: string) => setCurrentPassword(text)}
         placeholderTextColor="#AAAAAA"
       />
-      <TextInput
-        style={dynamicStyles.input}
-        placeholder={t("new_password_placeholder")}
-        secureTextEntry
-        value={newPassword}
-        onChangeText={(text: string) => setNewPassword(text)}
-        placeholderTextColor="#AAAAAA"
-      />
-      <TextInput
-        style={dynamicStyles.input}
-        placeholder={t("confirm_password_placeholder")}
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={(text: string) => setConfirmPassword(text)}
-        placeholderTextColor="#AAAAAA"
-      />
+
+      <View style={dynamicStyles.passwordContainer}>
+        <TextInput
+          style={dynamicStyles.passwordInput}
+          placeholder={t("new_password_placeholder")}
+          secureTextEntry={secureText}
+          value={newPassword}
+          onChangeText={setNewPassword}
+          placeholderTextColor="#AAAAAA"
+        />
+        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+          <Icon name={secureText ? "eye-off" : "eye"} size={24} color="#AAAAAA" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={dynamicStyles.passwordContainer}>
+        <TextInput
+          style={dynamicStyles.passwordInput}
+          placeholder={t("confirm_password_placeholder")}
+          secureTextEntry={secureText}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          placeholderTextColor="#AAAAAA"
+        />
+        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+          <Icon name={secureText ? "eye-off" : "eye"} size={24} color="#AAAAAA" />
+        </TouchableOpacity>
+      </View>
+     
 
       <TouchableOpacity
         style={theme === "light" ? dynamicStyles.button : dynamicStyles.buttonDark}

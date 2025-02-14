@@ -14,6 +14,7 @@ import auth from "@react-native-firebase/auth";
 import { useAuth } from "../../storage/context/AuthContext";
 import { useAppTheme } from "../../storage/context/ThemeContext";
 import { Snackbar } from "../../components/Snackbar";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface RegisterProps {
   navigation: NavigationProp<any>;
@@ -29,6 +30,7 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [secureText, setSecureText] = useState(true);
 
   const triggerSnackbar = (message: string = "") => {
     setSnackbarMessage(message);
@@ -125,6 +127,24 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
       fontSize: 16,
       fontWeight: "bold",
     },
+    passwordContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      width: "90%",
+      height: 50,
+      backgroundColor: "#FFFFFF",
+      borderRadius: 15,
+      paddingHorizontal: 15,
+      fontSize: 16,
+      marginTop: 20,
+      borderWidth: 1,
+      borderColor: "#DDDDDD",
+    },
+    passwordInput: {
+      flex: 1,
+      fontSize: 16,
+      color: "#000000",
+    },
   });
 
   return (
@@ -146,14 +166,36 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
         onChangeText={(text) => setEmail(text)}
         placeholderTextColor="#AAAAAA"
       />
-      <TextInput
-        style={dynamicStyles.input}
-        placeholder={t("password_placeholder")}
-        secureTextEntry
-        value={password}
-        onChangeText={(text) => setPassword(text)}
-        placeholderTextColor="#AAAAAA"
-      />
+
+      <View style={dynamicStyles.passwordContainer}>
+        <TextInput
+          style={dynamicStyles.passwordInput}
+          placeholder={t("password_placeholder")}
+          secureTextEntry={secureText}
+          value={password}
+          onChangeText={setPassword}
+          placeholderTextColor="#AAAAAA"
+        />
+        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+          <Icon name={secureText ? "eye-off" : "eye"} size={24} color="#AAAAAA" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={dynamicStyles.passwordContainer}>
+        <TextInput
+          style={dynamicStyles.passwordInput}
+          placeholder={t("confirm_password_placeholder")}
+          secureTextEntry={secureText}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          placeholderTextColor="#AAAAAA"
+        />
+        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+          <Icon name={secureText ? "eye-off" : "eye"} size={24} color="#AAAAAA" />
+        </TouchableOpacity>
+      </View>
+
+{/*      
       <TextInput
         style={dynamicStyles.input}
         placeholder={t("confirm_password_placeholder")}
@@ -161,7 +203,7 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
         value={confirmPassword}
         onChangeText={(text) => setConfirmPassword(text)}
         placeholderTextColor="#AAAAAA"
-      />
+      /> */}
 
       <TouchableOpacity
         style={theme === "light" ? dynamicStyles.button : dynamicStyles.buttondark}

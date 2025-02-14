@@ -17,6 +17,8 @@ import { useAuth } from "../../storage/context/AuthContext";
 import { Snackbar } from "../../components/Snackbar";
 import { useAppTheme } from "../../storage/context/ThemeContext";
 import { useApp } from "../../storage/context/AppContext";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+
 
 interface LoginProps {
   navigation: NavigationProp<any>;
@@ -27,9 +29,9 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
   const { login } = useAuth();
   const { theme, themeProperties } = useAppTheme();
   const { business, changeBusinessName } = useApp();
-
-  const [email, setEmail] = useState<string>("parth26.8patel@gmail.com");
-  const [password, setPassword] = useState<string>("123456");
+  const [secureText, setSecureText] = useState(true);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
@@ -101,6 +103,25 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
       borderColor: "#DDDDDD",
       color: themeProperties.textColor,
     },
+   
+    passwordContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      width: "90%",
+      height: 50,
+      backgroundColor: "#FFFFFF",
+      borderRadius: 15,
+      paddingHorizontal: 15,
+      fontSize: 16,
+      marginTop: 20,
+      borderWidth: 1,
+      borderColor: "#DDDDDD",
+    },
+    passwordInput: {
+      flex: 1,
+      fontSize: 16,
+      color: "#000000",
+    },
     button: {
       width: "90%",
       backgroundColor: "#000000",
@@ -151,17 +172,22 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
         placeholder={t("email_placeholder")}
         keyboardType="email-address"
         value={email}
-        onChangeText={(text: string) => setEmail(text)}
+        onChangeText={setEmail}
         placeholderTextColor="#AAAAAA"
       />
-      <TextInput
-        style={dynamicStyles.input}
-        placeholder={t("password_placeholder")}
-        secureTextEntry
-        value={password}
-        onChangeText={(text: string) => setPassword(text)}
-        placeholderTextColor="#AAAAAA"
-      />
+      <View style={dynamicStyles.passwordContainer}>
+        <TextInput
+          style={dynamicStyles.passwordInput}
+          placeholder={t("password_placeholder")}
+          secureTextEntry={secureText}
+          value={password}
+          onChangeText={setPassword}
+          placeholderTextColor="#AAAAAA"
+        />
+        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+          <Icon name={secureText ? "eye-off" : "eye"} size={24} color="#AAAAAA" />
+        </TouchableOpacity>
+      </View>
 
       <Pressable onPress={handlefogetpassword} style={{
         justifyContent: 'flex-end',

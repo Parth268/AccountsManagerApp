@@ -11,6 +11,15 @@ import i18n from './src/locales/i18n';
 import firebase from '@react-native-firebase/app'; // Import Firebase
 import 'firebase/database';
 import { LanguageProvider } from './src/storage/context/LanguageContext';
+import {
+  API_KEY,
+  AUTH_DOMAIN,
+  DATABASE_URL,
+  PROJECT_ID,
+  STORAGE_BUCKET,
+  MESSAGING_SENDER_ID,
+  APP_ID,
+} from '@env';
 
 type ErrorFallbackProps = {
   error: Error;
@@ -36,13 +45,13 @@ const App = () => {
       if (!firebase.apps.length) {
         // Initialize Firebase if not already initialized
         firebase.initializeApp({
-          apiKey: 'AIzaSyBckuMisi2DLuz5ahV2RiMHEQdC_e1ubZI',
-          authDomain: 'account-manager-6e9e0.firebaseapp.com',
-          databaseURL: 'https://account-manager-6e9e0-default-rtdb.firebaseio.com',
-          projectId: 'account-manager-6e9e0',
-          storageBucket: 'account-manager-6e9e0.appspot.com',
-          messagingSenderId: '498251559925',
-          appId: '1:498251559925:android:328c725703a114db3966bc',
+          apiKey: API_KEY,
+          authDomain: AUTH_DOMAIN,
+          databaseURL: DATABASE_URL,
+          projectId: PROJECT_ID,
+          storageBucket: STORAGE_BUCKET,
+          messagingSenderId: MESSAGING_SENDER_ID,
+          appId: APP_ID,
         });
 
       } else {
