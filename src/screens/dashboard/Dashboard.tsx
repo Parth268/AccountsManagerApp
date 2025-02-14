@@ -132,7 +132,18 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
       const userId = auth().currentUser?.uid;
       if (!userId) return triggerSnackbar(t("authentication_failed"));
 
-      await database().ref(userId).set({ businessName: data, userId });
+      // await database().ref(userId).set({
+      //   businessName: data,
+      //   userId
+      // });
+
+      const userRef = database().ref(`${userId}`);
+
+      // Append to array or initialize if empty
+      await userRef.update({
+        businessName: data,
+        userId: userId,
+      });
 
       setBusinessName(data);
       changeBusinessName(data);
@@ -251,7 +262,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
         >
           <Text
             style={[
-              styles.tabText,{color:themeProperties.textColor},
+              styles.tabText, { color: themeProperties.textColor },
               activeTab === "customer" && styles.activeTabText,
             ]}
           >
@@ -265,7 +276,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
         >
           <Text
             style={[
-              styles.tabText,{color:themeProperties.textColor},
+              styles.tabText, { color: themeProperties.textColor },
               activeTab === "supplier" && styles.activeTabText,
             ]}
           >
