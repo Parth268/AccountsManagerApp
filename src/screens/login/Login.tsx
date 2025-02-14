@@ -44,18 +44,25 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
     setLoading(true);
     try {
       // Store email in AsyncStorage
-      await AsyncStorage.setItem(STORAGE_KEYS.USER_EMAIL, email);
-      // Attempt login
-      await signInWithEmailPassword();
+      if (email && password) {
+        await AsyncStorage.setItem(STORAGE_KEYS.USER_EMAIL, email);
+        // Attempt login
+        await signInWithEmailPassword();
+      } else {
+        triggerSnackbar(t("please_fill_all_fields"));
+        setLoading(false)
+      }
     } catch (error) {
       setLoading(false);
       triggerSnackbar(t("error_message"));
+    } finally {
+      setLoading(false);
     }
   };
 
   const signInWithEmailPassword = async () => {
     try {
-      const userCredential = await auth().signInWithEmailAndPassword(email, password);
+      const userCredential = await auth().signInWithEmailAndPassword(email.toString().trim(), password.toString().trim());
       setLoading(false);
 
       if (userCredential) {
@@ -103,13 +110,13 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
       borderColor: "#DDDDDD",
       color: themeProperties.textColor,
     },
-   
+
     passwordContainer: {
       flexDirection: "row",
       alignItems: "center",
       width: "90%",
       height: 50,
-      backgroundColor: "#FFFFFF",
+      backgroundColor: themeProperties.backgroundColor,
       borderRadius: 15,
       paddingHorizontal: 15,
       fontSize: 16,
@@ -120,7 +127,7 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
     passwordInput: {
       flex: 1,
       fontSize: 16,
-      color: "#000000",
+      color: themeProperties.textColor,
     },
     button: {
       width: "90%",

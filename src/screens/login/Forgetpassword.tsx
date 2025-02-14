@@ -33,11 +33,12 @@ const ForgetPassword: React.FC<ForgetPasswordProps> = ({ navigation }) => {
   const handleResetPassword = async () => {
     if (!email) {
       triggerSnackbar(t("email_required"));
+      setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      await auth().sendPasswordResetEmail(email);
+      await auth().sendPasswordResetEmail(email.toString().trim());
       setLoading(false);
       triggerSnackbar(t("reset_email_sent"));
       setTimeout(() => navigation.goBack(), 1000);

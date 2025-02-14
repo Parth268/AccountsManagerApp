@@ -45,7 +45,7 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ navigation }) => {
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    if (newPassword.toString().trim() !== confirmPassword.toString().trim()) {
       triggerSnackbar(t("password_mismatch"));
       return;
     }
@@ -57,13 +57,13 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ navigation }) => {
 
       // Re-authenticate user
       const credential = auth.EmailAuthProvider.credential(
-        user.email,
-        currentPassword
+        user.email.toString().trim(),
+        currentPassword.toString().trim()
       );
       await user.reauthenticateWithCredential(credential);
 
       // Update password
-      await user.updatePassword(newPassword);
+      await user.updatePassword(newPassword.toString().trim());
       setLoading(false);
       triggerSnackbar(t("password_updated"));
       setTimeout(() => navigation.goBack(), 1000);
@@ -132,7 +132,7 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ navigation }) => {
       alignItems: "center",
       width: "90%",
       height: 50,
-      backgroundColor: "#FFFFFF",
+      backgroundColor: themeProperties.backgroundColor,
       borderRadius: 15,
       paddingHorizontal: 15,
       fontSize: 16,
@@ -143,7 +143,7 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ navigation }) => {
     passwordInput: {
       flex: 1,
       fontSize: 16,
-      color: "#000000",
+      color: themeProperties.textColor,
     },
   });
 

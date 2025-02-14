@@ -168,7 +168,10 @@
   "enter_supplier_email": "Enter Supplier Email",
   "supplier_address": "Supplier Address",
   "enter_supplier_address": "Enter Supplier Address",
-  "show_address":"Show Address",
-  "close":"Close",
-  "enter_transaction_amount":"Enter Transaction Amount"
+  "show_address": "Show Address",
+  "close": "Close",
+  "enter_transaction_amount": "Enter Transaction Amount",
+  "exit_app": "Exit App",
+  "exit_title": "Are you sure you want to exit?",
+  "yes":"Yes"
 }

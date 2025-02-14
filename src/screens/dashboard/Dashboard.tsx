@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Animated,
   Dimensions,
+  Alert, BackHandler,
   StatusBar,
   ActivityIndicator,
   Pressable, // Use FlatList here
@@ -66,6 +67,27 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    const backAction = () => {
+      Alert.alert(
+        t("exit_app"),
+        t("exit_title"),
+        [
+          { text: t('cancel'), onPress: () => null, style: 'cancel' },
+          { text: t('yes'), onPress: () => BackHandler.exitApp() },
+        ]
+      );
+      return true; // Prevent default back action
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove(); // Cleanup on unmount
+  }, []);
 
 
   const loadBusinessName = async () => {

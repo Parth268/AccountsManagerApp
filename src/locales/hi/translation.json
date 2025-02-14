@@ -170,5 +170,9 @@
   "enter_supplier_address": "आपूर्तिकर्ता का पता दर्ज करें",
   "show_address": "पता दिखाएं",
   "close": "बंद करें",
-  "enter_transaction_amount": "लेनदेन की राशि दर्ज करें"
+  "enter_transaction_amount": "लेनदेन की राशि दर्ज करें",
+  
+  "exit_app": "ऐप से बाहर निकलें",
+  "exit_title": "क्या आप वाकई बाहर निकलना चाहते हैं?",
+  "yes": "हाँ"
 }

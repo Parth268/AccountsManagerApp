@@ -39,7 +39,12 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
 
   const handleRegister = async () => {
     setLoading(true);
-    if (password !== confirmPassword) {
+    if(!email){
+      triggerSnackbar(t("please_fill_all_fields"));
+      setLoading(false);
+      return;
+    }
+    if (password.toString().trim() !== confirmPassword.toString().trim()) {
       setLoading(false);
       triggerSnackbar(t("password_mismatch"));
       return;
@@ -52,7 +57,7 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
     }
 
     try {
-      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      const userCredential = await auth().createUserWithEmailAndPassword(email.toString().trim(), password.toString().trim());
       if (userCredential) {
         await AsyncStorage.setItem("USER_EMAIL", email);
         await AsyncStorage.setItem("USER_ID", userCredential.user.uid);
@@ -132,7 +137,7 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
       alignItems: "center",
       width: "90%",
       height: 50,
-      backgroundColor: "#FFFFFF",
+      backgroundColor: themeProperties.backgroundColor,
       borderRadius: 15,
       paddingHorizontal: 15,
       fontSize: 16,
@@ -143,7 +148,7 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
     passwordInput: {
       flex: 1,
       fontSize: 16,
-      color: "#000000",
+      color: themeProperties.textColor,
     },
   });
 
