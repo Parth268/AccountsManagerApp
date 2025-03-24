@@ -68,26 +68,31 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
     fetchData();
   }, [fetchData]);
 
-  useEffect(() => {
-    const backAction = () => {
-      Alert.alert(
-        t("exit_app"),
-        t("exit_title"),
-        [
-          { text: t('cancel'), onPress: () => null, style: 'cancel' },
-          { text: t('yes'), onPress: () => BackHandler.exitApp() },
-        ]
+  useFocusEffect(
+    useCallback(() => {
+
+      const backAction = () => {
+        Alert.alert(
+          t("exit_app"),
+          t("exit_title"),
+          [
+            { text: t('cancel'), onPress: () => null, style: 'cancel' },
+            { text: t('yes'), onPress: () => BackHandler.exitApp() },
+          ]
+        );
+        return true; // Prevent default back action
+      };
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction
       );
-      return true; // Prevent default back action
-    };
+  
+      return () => backHandler.remove(); // Cleanup on unmount
 
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
-    );
+    }, [])
+  );
 
-    return () => backHandler.remove(); // Cleanup on unmount
-  }, []);
+  
 
 
   const loadBusinessName = async () => {
@@ -260,7 +265,9 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation }) => {
               </View>
             </View>
 
-            {phoneNumber && <Text style={styles.ownerName}>{phoneNumber}</Text>}
+            {phoneNumber && <Text style={[styles.ownerName,{
+                  color: themeProperties.textColor
+            }]}>{phoneNumber}</Text>}
           </Pressable>
         }
 

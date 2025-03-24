@@ -11,8 +11,7 @@ import CustomerList from "../screens/customer/Customer";
 import AddEditCustomer from '../screens/customer/AddEditCustomer';
 import Supplier from "../screens/supplier/Supplier";
 import ModeStatus from "../screens/setting/ModeStatus";
-import IncreaseTextSize from "../screens/setting/IncreaseTextSize";
-import CustomerTransactionScreen from "../screens/customer/CustomerTransactionScreen";
+import CustomerTransaction from "../screens/customer/CustomerTransactionScreen";
 import AddEditSupplier from "../screens/supplier/AddEditSupplier";
 import SupplierTransactionScreen from "../screens/supplier/SupplierTransactionScreen";
 
@@ -50,7 +49,7 @@ const AppStack = () => {
       />
       <Stack.Screen
         name={NAVIGATION.CUSTOMER_TRANSACTION_SCREEN}
-        component={CustomerTransactionScreen}
+        component={CustomerTransaction}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -58,11 +57,7 @@ const AppStack = () => {
         component={SupplierTransactionScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen
-        name={NAVIGATION.CHANGE_TEXT_SIZE}
-        component={IncreaseTextSize}
-        options={{ headerShown: false }}
-      />
+     
       <Stack.Screen
         name={NAVIGATION.MODE_STATUS}
         component={ModeStatus}

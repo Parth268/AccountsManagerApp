@@ -173,5 +173,6 @@
   "enter_transaction_amount": "Enter Transaction Amount",
   "exit_app": "Exit App",
   "exit_title": "Are you sure you want to exit?",
-  "yes":"Yes"
+  "yes":"Yes",
+  "login_failed":"Login Failed"
 }

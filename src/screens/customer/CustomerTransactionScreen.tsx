@@ -25,7 +25,6 @@ import CustomAlertTransaction from '../../components/CustomAlertTranscation';
 import { User, Transaction } from '../types'
 import { Snackbar } from '../../components/Snackbar';
 import CustomAlertEditTransaction from '../../components/CustomAlertEditTranscation';
-import { RawTransaction } from '../types/RawTransaction';
 import AddressModal from '../../components/AddressModal';
 
 
@@ -54,7 +53,7 @@ const calculateTotal = (transactions: Transaction[]): Promise<{ totalGave: numbe
 };
 
 
-const CustomerTransactionScreen = ({ route, navigation }: Props) => {
+const CustomerTransaction: React.FC<Props> = ({ route, navigation }) => {
 
   const { t } = useTranslation();
   const { themeProperties } = useAppTheme();
@@ -734,8 +733,6 @@ const CustomerTransactionScreen = ({ route, navigation }: Props) => {
   );
 };
 
-export default CustomerTransactionScreen;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -917,3 +914,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+export default CustomerTransaction;
+
+

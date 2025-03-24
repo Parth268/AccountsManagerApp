@@ -10,7 +10,6 @@ import {
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useAppTheme } from "../../storage/context/ThemeContext";
 import Header from "../../components/Header";
-import PushNotification from "react-native-push-notification";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../storage/context/AuthContext";
 import { DEFAULTS, NAVIGATION } from "../../utils/constants";
@@ -68,8 +67,6 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
   }
 
   const handleOnNotificationReset = () => {
-    PushNotification.cancelAllLocalNotifications();
-    PushNotification.removeAllDeliveredNotifications();
     triggerSnackbar(t("notification_clean"));
   };
 
@@ -108,12 +105,12 @@ const Settings: React.FC<SettingsProps> = ({ navigation }) => {
 
         </Pressable>
 
-        <Pressable style={styles.item} onPress={handleOnNotificationReset}>
+        {/* <Pressable style={styles.item} onPress={handleOnNotificationReset}>
           <Icon name="notifications-none" size={24} color={themeProperties.textColor} style={styles.icon} />
           <Text style={[styles.itemText, { color: themeProperties.textColor }]}>
             {t("notifications_reset")}
           </Text>
-        </Pressable>
+        </Pressable> */}
 
         <Pressable style={styles.item} onPress={handleOnchangePassword}>
           <Icon name="password" size={24} color={themeProperties.textColor} style={styles.icon} />

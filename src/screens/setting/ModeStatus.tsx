@@ -40,11 +40,7 @@ const RadioButton: React.FC<RadioButtonProps> = ({ label, value, selectedValue, 
 const ModeStatus: React.FC<ModeStatusProps> = ({ navigation }) => {
 
   const { t } = useTranslation();
-  const { logout } = useAuth();
-  const { language } = useLanguage();
-  const { theme, toggleTheme, toggleThemeStatus, themeProperties, themeStatus } = useAppTheme();
-  const [isAlertVisible, setAlertVisible] = useState<boolean>(false);
-  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const {  toggleThemeStatus, themeProperties, themeStatus } = useAppTheme();
   const [selectedValue, setSelectedValue] = useState(themeStatus);
 
 

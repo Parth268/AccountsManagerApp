@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { useTranslation } from "react-i18next";
-import auth from '@react-native-firebase/auth';
 
 const OTP: React.FC<any> = ({ route }) => {
   const { t } = useTranslation();
@@ -59,7 +58,6 @@ const OTP: React.FC<any> = ({ route }) => {
         {Array.from({ length: 4 }).map((_, index) => (
           <TextInput
             key={index}
-            ref={(ref) => (inputRefs.current[index] = ref)}
             style={[styles.otpInput, { borderColor: otp[index] ? "#000" : "#DDDDDD" }]}
             keyboardType="numeric"
             maxLength={1}

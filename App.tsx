@@ -5,12 +5,13 @@ import MainNavigator from './src/navigation/MainNavigator';
 import { AuthProvider } from './src/storage/context/AuthContext';
 import { AppProvider } from './src/storage/context/AppContext';
 import { ThemeProvider } from './src/storage/context/ThemeContext';
-import NotificationService from './src/services/NotificationService';
 import { ErrorBoundary } from 'react-error-boundary';
 import i18n from './src/locales/i18n';
-import firebase from '@react-native-firebase/app'; // Import Firebase
-import 'firebase/database';
 import { LanguageProvider } from './src/storage/context/LanguageContext';
+
+// ✅ Import modular Firebase SDK
+import { initializeApp, getApps, getApp } from '@react-native-firebase/app';
+
 import {
   API_KEY,
   AUTH_DOMAIN,
@@ -34,17 +35,14 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetErrorBoundary
   </View>
 );
 
-
 const App = () => {
-
   useEffect(() => {
     let isMounted = true;
 
-    // Ensure Firebase is initialized
+    // ✅ Use modular Firebase API
     const initializeFirebase = () => {
-      if (!firebase.apps.length) {
-        // Initialize Firebase if not already initialized
-        firebase.initializeApp({
+      if (!getApps().length) {
+        initializeApp({
           apiKey: API_KEY,
           authDomain: AUTH_DOMAIN,
           databaseURL: DATABASE_URL,
@@ -53,31 +51,15 @@ const App = () => {
           messagingSenderId: MESSAGING_SENDER_ID,
           appId: APP_ID,
         });
-
       } else {
-        // If Firebase is already initialized, use the default app
-        firebase.app();
+        getApp(); // Get the already initialized app
       }
     };
 
     initializeFirebase();
 
-    // Handle notification permissions
-    const checkNotificationPermissions = async () => {
-      try {
-        const granted = await NotificationService.checkPermissions();
-        if (isMounted) {
-          console.log('Notification permissions:', granted);
-          if (!granted) {
-            console.warn('Notification permissions not granted');
-          }
-        }
-      } catch (error) {
-        if (isMounted) {
-          console.error('Error checking notification permissions:', error);
-        }
-      }
-    };
+    // Handle notification permissions (if needed)
+    const checkNotificationPermissions = async () => {};
 
     checkNotificationPermissions();
 
@@ -108,10 +90,6 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: 'center',
-    // alignItems: 'center',
-    // padding: 20,
-    // backgroundColor: '#f8f9fa',
   },
   title: {
     fontSize: 24,

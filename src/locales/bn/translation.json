@@ -122,5 +122,7 @@
   "transactions": "লেনদেন",
   "confirm_delete": "আপনি কি নিশ্চিত যে এই লেনদেনটি মুছতে চান?",
   "total_settlement": "মোট নিষ্পত্তি",
-  "no_data": "কোনো তথ্য নেই"
+  "no_data": "কোনো তথ্য নেই",
+  "login_failed":"লগইন ব্যর্থ"
+
 }

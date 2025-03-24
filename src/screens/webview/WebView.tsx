@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, StyleSheet,  ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import Header from '../../components/Header';

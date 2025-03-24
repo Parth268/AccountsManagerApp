@@ -4,10 +4,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
-  Alert,
   Text,
-  ActivityIndicator,
   Pressable
 } from "react-native";
 import { useAppTheme } from "../../storage/context/ThemeContext";

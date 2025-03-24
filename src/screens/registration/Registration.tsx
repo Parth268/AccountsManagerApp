@@ -71,6 +71,7 @@ const Register: React.FC<RegisterProps> = ({ navigation }) => {
       }
     } catch (error) {
       setLoading(false);
+      console.log(error)
       triggerSnackbar(t("register_failed"));
     }
   };

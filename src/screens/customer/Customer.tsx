@@ -12,7 +12,7 @@ interface Props {
 }
 
 
-const Customer: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
+const CustomerList: React.FC<Props> = ({ user, navigation, onRefreshList }) => {
 
   const { t } = useTranslation();
   const { theme, themeProperties } = useAppTheme();
@@ -223,4 +223,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Customer;
+export default CustomerList;
